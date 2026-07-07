@@ -16,7 +16,7 @@ export class BranchesService {
   findAll() {
     return this.prisma.branch.findMany({
       include: {
-        Company: true,
+        company: true,
       },
       orderBy: {
         name: 'asc',
@@ -28,7 +28,7 @@ export class BranchesService {
     return this.prisma.branch.findUnique({
       where: { id },
       include: {
-        Company: true,
+        company: true,
       },
     });
   }
