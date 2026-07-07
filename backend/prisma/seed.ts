@@ -38,11 +38,11 @@ async function main() {
       code: 'HEAD',
       address: 'Anaparthy',
 
-      company: {
-        connect: {
-          id: company.id,
-        },
-      },
+      Company: {
+  connect: {
+    id: company.id,
+  },
+},
     },
   });
 

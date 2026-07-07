@@ -5,8 +5,8 @@ import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { BranchesModule } from './branches/branches.module';
 import { DepartmentsModule } from './departments/departments.module';
+import { BranchesModule } from './modules/branches/branches.module';
 
 @Module({
   imports: [

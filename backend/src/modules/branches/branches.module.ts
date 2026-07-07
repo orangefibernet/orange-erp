@@ -1,15 +1,9 @@
 import { Module } from '@nestjs/common';
-
 import { BranchesController } from './branches.controller';
 import { BranchesService } from './branches.service';
 
-import { RolesGuard } from '../auth/guards/roles.guard';
-
 @Module({
   controllers: [BranchesController],
-  providers: [
-    BranchesService,
-    RolesGuard,
-  ],
+  providers: [BranchesService]
 })
 export class BranchesModule {}

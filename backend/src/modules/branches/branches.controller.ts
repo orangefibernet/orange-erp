@@ -6,19 +6,17 @@ import {
   Param,
   Patch,
   Post,
-  Query,
 } from '@nestjs/common';
-
 import { BranchesService } from './branches.service';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { Roles } from '../auth/roles.decorator';
-import { RolesGuard } from '../auth/guards/roles.guard';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
-@Roles('Super Admin')
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('branches')
 export class BranchesController {
   constructor(private readonly branchesService: BranchesService) {}
@@ -29,9 +27,9 @@ export class BranchesController {
   }
 
   @Get()
-  findAll(@Query('search') search?: string) {
-    return this.branchesService.findAll(search);
-  }
+findAll() {
+  return this.branchesService.findAll();
+}
 
   @Get(':id')
   findOne(@Param('id') id: string) {

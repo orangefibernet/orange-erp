@@ -1,4 +1,3 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsEmail,
@@ -7,56 +6,43 @@ import {
 } from 'class-validator';
 
 export class CreateBranchDto {
-  @ApiProperty({
-    example: 'fa5937b5-e9e3-4763-b5e4-377a41629bcc',
-  })
   @IsString()
   companyId: string;
 
-  @ApiProperty({ example: 'RJY' })
   @IsString()
   code: string;
 
-  @ApiProperty({ example: 'Rajahmundry Branch' })
   @IsString()
   name: string;
 
-  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   phone?: string;
 
-  @ApiPropertyOptional()
   @IsOptional()
   @IsEmail()
   email?: string;
 
-  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   address?: string;
 
-  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   city?: string;
 
-  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   state?: string;
 
-  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   country?: string;
 
-  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   pincode?: string;
 
-  @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;

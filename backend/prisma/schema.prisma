@@ -24,22 +24,24 @@ model Company {
 }
 
 model Branch {
-  id        String   @id @default(uuid())
-  companyId String
-  name      String
-  code      String   @unique
-  address   String?
-  isActive  Boolean  @default(true)
+  id      String  @id @default(cuid())
+  code    String  @unique
+  name    String
+  phone   String?
+  email   String?
+  address String?
+  city    String?
+  state   String?
+  country String? @default("India")
+  pincode String?
+
+  isActive Boolean @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  city      String?
-  email     String?
-  manager   String?
-  phone     String?
-  pincode   String?
-  state     String?
-  company   Company  @relation(fields: [companyId], references: [id])
-  users     User[]
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?
+  User      User[]
 }
 
 model Role {
