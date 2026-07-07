@@ -1,42 +1,58 @@
-import {
-  ArgumentsHost,
-  Catch,
-  ExceptionFilter,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
-import { Request, Response } from 'express';
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-@Catch()
-export class HttpExceptionFilter implements ExceptionFilter {
-  catch(exception: unknown, host: ArgumentsHost): void {
-    const ctx = host.switchToHttp();
+import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
-    const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
 
-    const status =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+  app.setGlobalPrefix('api');
 
-    const exceptionResponse =
-      exception instanceof HttpException
-        ? exception.getResponse()
-        : 'Internal server error';
+  app.useGlobalFilters(new HttpExceptionFilter());
 
-    const message =
-      typeof exceptionResponse === 'string'
-        ? exceptionResponse
-        : (exceptionResponse as { message?: string | string[] }).message ??
-          'Internal server error';
+  app.useGlobalInterceptors(
+    new TransformInterceptor(),
+  );
 
-    response.status(status).json({
-      success: false,
-      statusCode: status,
-      timestamp: new Date().toISOString(),
-      path: request.url,
-      message,
-    });
-  }
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('OrangeERP API')
+    .setDescription('OrangeERP Backend REST API')
+    .setVersion('1.0.0')
+    .addBearerAuth()
+    .build();
+
+  const swaggerDocument = SwaggerModule.createDocument(
+    app,
+    swaggerConfig,
+  );
+
+  SwaggerModule.setup('api/docs', app, swaggerDocument);
+
+  const port = Number(process.env.PORT) || 3001;
+
+  await app.listen(port);
+
+  console.log(`🚀 OrangeERP API running at http://localhost:${port}/api`);
+  console.log(`📘 Swagger Docs: http://localhost:${port}/api/docs`);
 }
+
+bootstrap();
