@@ -15,6 +15,7 @@ export class UsersService {
       },
       include: {
         company: true,
+        branch: true,
         role: true,
       },
     });
@@ -25,6 +26,7 @@ export class UsersService {
       where: { id },
       include: {
         company: true,
+        branch: true,
         role: true,
       },
     });

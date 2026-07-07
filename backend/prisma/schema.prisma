@@ -8,47 +8,95 @@ datasource db {
 }
 
 model Company {
+  id           String        @id @default(uuid())
+  name         String
+  code         String        @unique
+  email        String?
+  phone        String?
+  address      String?
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  branches     Branch[]
+  departments  Department[]
+  designations Designation[]
+  users        User[]
+}
+
+model Branch {
   id        String   @id @default(uuid())
+  companyId String
   name      String
   code      String   @unique
-  email     String?
-  phone     String?
+  address   String?
   isActive  Boolean  @default(true)
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  users User[]
+  city      String?
+  email     String?
+  manager   String?
+  phone     String?
+  pincode   String?
+  state     String?
+  company   Company  @relation(fields: [companyId], references: [id])
+  users     User[]
 }
 
 model Role {
   id          String   @id @default(uuid())
   name        String   @unique
   description String?
-
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  users       User[]
+}
 
-  users User[]
+model Department {
+  id          String   @id @default(uuid())
+  name        String
+  code        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  companyId   String
+  description String?
+  isActive    Boolean  @default(true)
+  company     Company  @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, code])
+}
+
+model Designation {
+  id          String   @id @default(uuid())
+  name        String
+  code        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  companyId   String
+  description String?
+  isActive    Boolean  @default(true)
+  company     Company  @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, code])
 }
 
 model User {
-  id           String   @id @default(uuid())
-
+  id           String    @id @default(uuid())
   companyId    String
-  company       Company @relation(fields: [companyId], references: [id])
-
+  branchId     String
   roleId       String
-  role          Role    @relation(fields: [roleId], references: [id])
-
-  username     String   @unique
-  email        String   @unique
+  username     String    @unique
+  email        String    @unique
   passwordHash String
   fullName     String
-
-  isActive     Boolean  @default(true)
+  isActive     Boolean   @default(true)
   lastLogin    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  branch       Branch    @relation(fields: [branchId], references: [id])
+  company      Company   @relation(fields: [companyId], references: [id])
+  role         Role      @relation(fields: [roleId], references: [id])
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  @@index([companyId])
+  @@index([branchId])
+  @@index([roleId])
 }
