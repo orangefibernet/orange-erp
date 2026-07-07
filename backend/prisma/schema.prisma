@@ -21,11 +21,25 @@ model Company {
   users User[]
 }
 
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users User[]
+}
+
 model User {
   id           String   @id @default(uuid())
 
   companyId    String
-  company      Company @relation(fields: [companyId], references: [id])
+  company       Company @relation(fields: [companyId], references: [id])
+
+  roleId       String
+  role          Role    @relation(fields: [roleId], references: [id])
 
   username     String   @unique
   email        String   @unique
@@ -33,6 +47,7 @@ model User {
   fullName     String
 
   isActive     Boolean  @default(true)
+  lastLogin    DateTime?
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
