@@ -18,6 +18,8 @@ model Company {
   holidays Holiday[]
   customers Customer[]
   packages Package[]
+  olts Olt[]
+  onus Onu[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -52,6 +54,8 @@ model Branch {
   employees   Employee[]
   holidays Holiday[]
   customers Customer[]
+  olts Olt[]
+  onus Onu[]
 
   @@unique([companyId, code])
 }
@@ -351,6 +355,7 @@ model Customer {
   email             String?
 
   subscriptions Subscription[]
+  connections Connection[]
 
   customerType      CustomerType     @default(HOME)
   status            CustomerStatus   @default(LEAD)
@@ -469,6 +474,9 @@ model Subscription {
 
   remarks             String?
 
+  connections Connection[]
+  billings Billing[]
+
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   deletedAt           DateTime?
@@ -476,6 +484,160 @@ model Subscription {
   @@index([customerId])
   @@index([packageId])
   @@index([status])
+}
+
+model Connection {
+  id                 String   @id @default(uuid())
+
+  customerId         String
+  customer           Customer @relation(fields: [customerId], references: [id])
+
+  subscriptionId     String
+  subscription       Subscription @relation(fields: [subscriptionId], references: [id])
+
+  pppoeUsername      String   @unique
+  pppoePassword      String
+
+  oltName            String?
+  ponPort            String?
+
+  onuSerialNumber    String?
+
+  vlanId             Int?
+
+  staticIp           String?
+
+  macAddress         String?
+
+  installationDate   DateTime?
+
+  activationDate     DateTime?
+
+  status             ConnectionStatus @default(PENDING)
+
+  remarks            String?
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  deletedAt          DateTime?
+
+  @@index([customerId])
+  @@index([subscriptionId])
+  @@index([pppoeUsername])
+}
+
+model Billing {
+  id             String        @id @default(uuid())
+
+  subscriptionId String
+  subscription   Subscription  @relation(fields: [subscriptionId], references: [id])
+
+  billingMonth   Int
+  billingYear    Int
+
+  invoiceNumber  String        @unique
+
+  amount         Decimal       @db.Decimal(10,2)
+  gstAmount      Decimal       @db.Decimal(10,2)
+
+  totalAmount    Decimal       @db.Decimal(10,2)
+
+  dueDate        DateTime
+
+  paidDate       DateTime?
+
+  status         BillingStatus @default(PENDING)
+
+  remarks        String?
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deletedAt      DateTime?
+
+  @@unique([subscriptionId, billingMonth, billingYear])
+  @@index([status])
+}
+
+model Olt {
+  id          String      @id @default(uuid())
+
+  companyId   String
+  company     Company     @relation(fields: [companyId], references: [id])
+
+  branchId    String?
+  branch      Branch?     @relation(fields: [branchId], references: [id])
+
+  name        String
+  vendor      OltVendor
+
+  model       String
+
+  managementIp String
+
+  snmpCommunity String?
+
+  sshPort     Int @default(22)
+
+  location    String?
+
+  onus Onu[]
+
+  status      OltStatus @default(ACTIVE)
+
+  remarks     String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  @@unique([companyId, name])
+  @@unique([companyId, managementIp])
+
+  @@index([companyId])
+  @@index([branchId])
+}
+
+model Onu {
+  id            String      @id @default(uuid())
+
+  companyId     String
+  company       Company     @relation(fields: [companyId], references: [id])
+
+  branchId      String?
+  branch        Branch?     @relation(fields: [branchId], references: [id])
+
+  oltId         String
+  olt           Olt         @relation(fields: [oltId], references: [id])
+
+  serialNumber  String      @unique
+  vendor        OnuVendor
+  model         String
+
+  ponPort       Int
+  onuId         Int
+
+  macAddress    String?
+
+  status        OnuStatus   @default(OFFLINE)
+
+  rxPower       Float?
+  txPower       Float?
+
+  distance      Float?
+
+  installedAt   DateTime?
+
+  remarks       String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  @@unique([oltId, ponPort, onuId])
+
+  @@index([companyId])
+  @@index([branchId])
+  @@index([oltId])
 }
 
 enum DocumentType {
@@ -544,4 +706,48 @@ enum SubscriptionStatus {
   SUSPENDED
   EXPIRED
   TERMINATED
+}
+enum ConnectionStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  DISCONNECTED
+}
+enum BillingStatus {
+  PENDING
+  GENERATED
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum OltVendor {
+  ZTE
+  HUAWEI
+  NOKIA
+  FIBERHOME
+  DASAN
+}
+
+enum OltStatus {
+  ACTIVE
+  MAINTENANCE
+  OFFLINE
+}
+
+enum OnuStatus {
+  ONLINE
+  OFFLINE
+  DISABLED
+}
+
+enum OnuVendor {
+  ZTE
+  HUAWEI
+  NOKIA
+  FIBERHOME
+  VSOL
+  TP_LINK
+  UFIBER
+  OTHER
 }

@@ -30,6 +30,10 @@ import { HolidayModule } from './holiday/holiday.module';
 import { CustomerModule } from './customer/customer.module';
 import { PackageModule } from './package/package.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { ConnectionModule } from './connection/connection.module';
+import { BillingModule } from './billing/billing.module';
+import { OltModule } from './olt/olt.module';
+import { OnuModule } from './onu/onu.module';
 
 
 
@@ -71,6 +75,10 @@ import { SubscriptionModule } from './subscription/subscription.module';
     CustomerModule,
     PackageModule,
     SubscriptionModule,
+    ConnectionModule,
+    BillingModule,
+    OltModule,
+    OnuModule,
     
   ],
 })
