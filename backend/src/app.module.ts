@@ -1,6 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
+import {
+  appConfig,
+  authConfig,
+  databaseConfig,
+  swaggerConfig,
+} from './config';
+
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
@@ -16,6 +23,14 @@ import { EmployeeModule } from './employee/employee.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      cache: true,
+      expandVariables: true,
+      load: [
+        appConfig,
+        authConfig,
+        databaseConfig,
+        swaggerConfig,
+      ],
     }),
 
     DatabaseModule,
