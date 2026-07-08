@@ -21,6 +21,7 @@ model Company {
   olts      Olt[]
   onus      Onu[]
   ponPorts  PonPort[]
+  nases     Nas[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -55,6 +56,7 @@ model Branch {
   employees   Employee[]
   holidays    Holiday[]
   customers   Customer[]
+  nases       Nas[]
   olts        Olt[]
   onus        Onu[]
   ponPorts    PonPort[]
@@ -505,6 +507,11 @@ model Connection {
   onuId String?
   onu   Onu?    @relation(fields: [onuId], references: [id])
 
+  nasId String?
+  nas   Nas?    @relation(fields: [nasId], references: [id])
+
+  serviceType ServiceType @default(PPPOE)
+
   // Service Details
   connectionNumber String @unique
 
@@ -540,6 +547,7 @@ model Connection {
   @@index([customerId])
   @@index([subscriptionId])
   @@index([onuId])
+  @@index([nasId])
   @@index([pppoeUsername])
   @@index([connectionNumber])
 }
@@ -553,7 +561,8 @@ model Billing {
   billingMonth Int
   billingYear  Int
 
-  invoiceNumber String @unique
+  invoiceNumber String   @unique
+  invoiceDate   DateTime @default(now())
 
   amount Decimal @db.Decimal(10, 2)
 
@@ -723,6 +732,69 @@ model PonPort {
   @@index([companyId])
   @@index([branchId])
   @@index([oltId])
+}
+
+model Nas {
+  id String @id @default(uuid())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  branchId String?
+  branch   Branch? @relation(fields: [branchId], references: [id])
+
+  name   String
+  vendor NasVendor
+
+  ipAddress String
+
+  username String
+
+  password String
+
+  apiPort Int?
+
+  sshPort Int @default(22)
+
+  isActive Boolean @default(true)
+
+  remarks String?
+
+  connections Connection[]
+  description String?
+
+  radiusEnabled Boolean @default(false)
+
+  apiProtocol String? // API / SSH / TELNET / REST
+
+  apiTimeout Int @default(30)
+
+  location String?
+
+  lastSyncAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+enum NasVendor {
+  MIKROTIK
+  CISCO
+  JUNIPER
+  HUAWEI
+}
+
+enum ServiceType {
+  PPPOE
+  HOTSPOT
+  STATIC
 }
 
 enum DocumentType {

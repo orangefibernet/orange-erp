@@ -44,6 +44,7 @@ import { PaymentModule } from './payment/payment.module';
 import { BillingSchedulerModule } from './billing-scheduler/billing-scheduler.module';
 import { PdfModule } from './pdf/pdf.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { NasModule } from './nas/nas.module';
 
 
 
@@ -98,6 +99,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
     BillingSchedulerModule,
     PdfModule,
     SchedulerModule,
+    NasModule,
     
   ],
 })
