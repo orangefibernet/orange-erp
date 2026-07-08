@@ -20,6 +20,7 @@ model Company {
   packages Package[]
   olts Olt[]
   onus Onu[]
+  ponPorts PonPort[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -56,6 +57,7 @@ model Branch {
   customers Customer[]
   olts Olt[]
   onus Onu[]
+  ponPorts PonPort[]
 
   @@unique([companyId, code])
 }
@@ -455,6 +457,8 @@ model Subscription {
   package             Package              @relation(fields: [packageId], references: [id])
 
   monthlyPrice        Decimal              @db.Decimal(10,2)
+  
+  billingCycle BillingCycle @default(MONTHLY)
 
   installationCharge  Decimal?             @db.Decimal(10,2)
 
@@ -495,13 +499,15 @@ model Connection {
   subscriptionId     String
   subscription       Subscription @relation(fields: [subscriptionId], references: [id])
 
-  pppoeUsername      String   @unique
+  // Network Inventory Relation
+  onuId              String?
+  onu                Onu? @relation(fields: [onuId], references: [id])
+
+  // Service Details
+  connectionNumber   String @unique
+
+  pppoeUsername      String @unique
   pppoePassword      String
-
-  oltName            String?
-  ponPort            String?
-
-  onuSerialNumber    String?
 
   vlanId             Int?
 
@@ -513,6 +519,14 @@ model Connection {
 
   activationDate     DateTime?
 
+  disconnectedDate   DateTime?
+
+  // Audit
+  installedBy        String?
+  activatedBy        String?
+
+  lastSyncAt         DateTime?
+
   status             ConnectionStatus @default(PENDING)
 
   remarks            String?
@@ -523,9 +537,10 @@ model Connection {
 
   @@index([customerId])
   @@index([subscriptionId])
+  @@index([onuId])
   @@index([pppoeUsername])
+  @@index([connectionNumber])
 }
-
 model Billing {
   id             String        @id @default(uuid())
 
@@ -549,6 +564,7 @@ model Billing {
   status         BillingStatus @default(PENDING)
 
   remarks        String?
+  payments Payment[]
 
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
@@ -556,6 +572,34 @@ model Billing {
 
   @@unique([subscriptionId, billingMonth, billingYear])
   @@index([status])
+}
+
+model Payment {
+  id              String   @id @default(uuid())
+
+  billingId       String
+  billing         Billing  @relation(fields: [billingId], references: [id])
+
+  receiptNumber   String   @unique
+
+  amount          Decimal  @db.Decimal(10,2)
+
+  paymentMethod   PaymentMethod
+
+  transactionId   String?
+
+  paymentDate     DateTime @default(now())
+
+  collectedBy     String?
+
+  remarks         String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+
+  @@index([billingId])
+  @@index([paymentDate])
 }
 
 model Olt {
@@ -581,6 +625,7 @@ model Olt {
   location    String?
 
   onus Onu[]
+  ponPorts PonPort[]
 
   status      OltStatus @default(ACTIVE)
 
@@ -613,7 +658,8 @@ model Onu {
   vendor        OnuVendor
   model         String
 
-  ponPort       Int
+  ponPortId String
+  ponPort   PonPort @relation(fields: [ponPortId], references: [id])
   onuId         Int
 
   macAddress    String?
@@ -628,12 +674,48 @@ model Onu {
   installedAt   DateTime?
 
   remarks       String?
+  connections Connection[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   deletedAt     DateTime?
 
-  @@unique([oltId, ponPort, onuId])
+  @@unique([ponPortId, onuId])
+
+  @@index([companyId])
+  @@index([branchId])
+  @@index([oltId])
+}
+
+model PonPort {
+  id          String @id @default(uuid())
+
+  companyId   String
+  company     Company @relation(fields: [companyId], references: [id])
+
+  branchId    String?
+  branch      Branch? @relation(fields: [branchId], references: [id])
+
+  oltId       String
+  olt         Olt @relation(fields: [oltId], references: [id])
+
+  name        String          // GPON1/1
+  portNumber  Int             // 1
+  splitter    String?         // 1:64
+  capacity    Int @default(64)
+
+  status      PonPortStatus @default(ACTIVE)
+
+  remarks     String?
+
+  onus        Onu[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  @@unique([oltId, portNumber])
+  @@unique([oltId, name])
 
   @@index([companyId])
   @@index([branchId])
@@ -750,4 +832,23 @@ enum OnuVendor {
   TP_LINK
   UFIBER
   OTHER
+}
+
+enum PonPortStatus {
+  ACTIVE
+  DISABLED
+  MAINTENANCE
+}
+
+enum PaymentMethod {
+  CASH
+  UPI
+  PHONEPE
+  GOOGLEPAY
+  PAYTM
+  BANK_TRANSFER
+  CHEQUE
+  CREDIT_CARD
+  DEBIT_CARD
+  ONLINE
 }

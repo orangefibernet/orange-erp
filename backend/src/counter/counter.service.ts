@@ -5,7 +5,11 @@ import { PrismaService } from '../database/prisma.service';
 export class CounterService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async next(name: string, prefix: string, digits = 6): Promise<string> {
+  async next(
+    name: string,
+    prefix: string,
+    digits = 6,
+  ): Promise<string> {
     const counter = await this.prisma.counter.upsert({
       where: { name },
       update: {
@@ -20,5 +24,18 @@ export class CounterService {
     });
 
     return `${prefix}${String(counter.value).padStart(digits, '0')}`;
+  }
+
+  async nextYearly(
+    name: string,
+    digits = 6,
+  ): Promise<string> {
+    const year = new Date().getFullYear();
+
+    return this.next(
+      `${name}-${year}`,
+      `${name.substring(0, 3)}-${year}-`,
+      digits,
+    );
   }
 }

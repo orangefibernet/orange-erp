@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 
 import {
   appConfig,
@@ -34,8 +35,13 @@ import { ConnectionModule } from './connection/connection.module';
 import { BillingModule } from './billing/billing.module';
 import { OltModule } from './olt/olt.module';
 import { OnuModule } from './onu/onu.module';
-
-
+import { PonPortModule } from './pon-port/pon-port.module';
+import { ProvisioningModule } from './provisioning/provisioning.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { InvoiceModule } from './invoice/invoice.module';
+import { PaymentModule } from './payment/payment.module';
+import { BillingSchedulerModule } from './billing-scheduler/billing-scheduler.module';
+import { PdfModule } from './pdf/pdf.module';
 
 
 @Module({
@@ -49,9 +55,10 @@ import { OnuModule } from './onu/onu.module';
         authConfig,
         databaseConfig,
         swaggerConfig,
-        
       ],
     }),
+
+    ScheduleModule.forRoot(),
 
     DatabaseModule,
     HealthModule,
@@ -79,7 +86,13 @@ import { OnuModule } from './onu/onu.module';
     BillingModule,
     OltModule,
     OnuModule,
-    
+    PonPortModule,
+    ProvisioningModule,
+    DashboardModule,
+    InvoiceModule,
+    PaymentModule,
+    BillingSchedulerModule,
+    PdfModule,
   ],
 })
 export class AppModule {}

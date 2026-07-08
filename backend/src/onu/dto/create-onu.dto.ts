@@ -5,20 +5,24 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
 } from 'class-validator';
 
 import { OnuVendor } from '@prisma/client';
 
 export class CreateOnuDto {
-  @IsString()
+  @IsUUID()
   companyId: string;
 
   @IsOptional()
-  @IsString()
+  @IsUUID()
   branchId?: string;
 
-  @IsString()
+  @IsUUID()
   oltId: string;
+
+  @IsUUID()
+  ponPortId: string;
 
   @IsString()
   serialNumber: string;
@@ -28,9 +32,6 @@ export class CreateOnuDto {
 
   @IsString()
   model: string;
-
-  @IsInt()
-  ponPort: number;
 
   @IsInt()
   onuId: number;
@@ -53,7 +54,7 @@ export class CreateOnuDto {
 
   @IsOptional()
   @IsDateString()
-  installedAt?: Date;
+  installedAt?: string;
 
   @IsOptional()
   @IsString()

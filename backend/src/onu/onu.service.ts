@@ -8,7 +8,7 @@ export class OnuService {
   constructor(private readonly prisma: PrismaService) {}
 
   create(dto: CreateOnuDto) {
-    const { companyId, branchId, oltId, ...data } = dto;
+    const { companyId, branchId, oltId, ponPortId, ...data } = dto;
 
     return this.prisma.onu.create({
       data: {
@@ -21,6 +21,11 @@ export class OnuService {
         olt: {
           connect: {
             id: oltId,
+          },
+        },
+        ponPort: {
+          connect: {
+            id: ponPortId,
           },
         },
         ...(branchId && {
@@ -40,6 +45,7 @@ export class OnuService {
         company: true,
         branch: true,
         olt: true,
+        ponPort: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -54,17 +60,19 @@ export class OnuService {
         company: true,
         branch: true,
         olt: true,
+        ponPort: true,
       },
     });
   }
 
   update(id: string, dto: UpdateOnuDto) {
-    const { companyId, branchId, oltId, ...data } = dto;
+    const { companyId, branchId, oltId, ponPortId, ...data } = dto;
 
     return this.prisma.onu.update({
       where: { id },
       data: {
         ...data,
+
         ...(companyId && {
           company: {
             connect: {
@@ -72,6 +80,7 @@ export class OnuService {
             },
           },
         }),
+
         ...(branchId && {
           branch: {
             connect: {
@@ -79,10 +88,19 @@ export class OnuService {
             },
           },
         }),
+
         ...(oltId && {
           olt: {
             connect: {
               id: oltId,
+            },
+          },
+        }),
+
+        ...(ponPortId && {
+          ponPort: {
+            connect: {
+              id: ponPortId,
             },
           },
         }),
