@@ -5,11 +5,12 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
+import { extname } from 'path';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class StorageService implements OnModuleInit {
   private client: Minio.Client;
-
   private readonly bucket: string;
 
   constructor(private readonly configService: ConfigService) {
@@ -33,6 +34,13 @@ export class StorageService implements OnModuleInit {
     } else {
       console.log(`✅ Bucket '${this.bucket}' exists`);
     }
+  }
+
+  private generateObjectKey(
+    folder: string,
+    originalName: string,
+  ): string {
+    return `${folder}/${randomUUID()}${extname(originalName)}`;
   }
 
   async upload(
@@ -60,6 +68,28 @@ export class StorageService implements OnModuleInit {
         `Upload failed: ${error.message}`,
       );
     }
+  }
+
+  async uploadFile(
+    folder: string,
+    file: Express.Multer.File,
+  ) {
+    const objectKey = this.generateObjectKey(
+      folder,
+      file.originalname,
+    );
+
+    await this.upload(
+      objectKey,
+      file.buffer,
+      file.mimetype,
+    );
+
+    return {
+      bucket: this.bucket,
+      objectKey,
+      url: await this.getPresignedUrl(objectKey),
+    };
   }
 
   async delete(objectKey: string) {

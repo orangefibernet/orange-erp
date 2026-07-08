@@ -15,7 +15,15 @@ export class UsersService {
       },
       include: {
         company: true,
-        role: true,
+        role: {
+          include: {
+            permissions: {
+              include: {
+                permission: true,
+              },
+            },
+          },
+        },
       },
     });
   }
@@ -25,7 +33,15 @@ export class UsersService {
       where: { id },
       include: {
         company: true,
-        role: true,
+        role: {
+          include: {
+            permissions: {
+              include: {
+                permission: true,
+              },
+            },
+          },
+        },
       },
     });
   }

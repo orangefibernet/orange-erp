@@ -14,6 +14,10 @@ model Company {
   email    String?
   phone    String?
   isActive Boolean @default(true)
+  shifts Shift[]
+  holidays Holiday[]
+  customers Customer[]
+  packages Package[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -46,6 +50,8 @@ model Branch {
 
   departments Department[]
   employees   Employee[]
+  holidays Holiday[]
+  customers Customer[]
 
   @@unique([companyId, code])
 }
@@ -136,6 +142,7 @@ model Employee {
   emergencyContact EmployeeEmergencyContact?
 
   documents EmployeeDocument[]
+  attendances Attendance[]
 
   managerId String?
   manager Employee? @relation("EmployeeManager", fields: [managerId], references: [id])
@@ -270,6 +277,207 @@ model Counter {
   updatedAt DateTime @updatedAt
 }
 
+model Attendance {
+  id              String             @id @default(uuid())
+  employeeId      String
+  employee        Employee           @relation(fields: [employeeId], references: [id])
+
+  attendanceDate  DateTime
+
+  checkIn         DateTime?
+  checkOut        DateTime?
+
+  workingHours    Float?
+  overtimeHours   Float? @default(0)
+
+  status          AttendanceStatus   @default(PRESENT)
+
+  shift           ShiftType          @default(GENERAL)
+
+  remarks         String?
+
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@unique([employeeId, attendanceDate])
+  @@index([attendanceDate])
+}
+
+model Holiday {
+  id          String      @id @default(uuid())
+
+  companyId   String
+  company      Company     @relation(fields: [companyId], references: [id])
+
+  branchId    String?
+  branch       Branch?     @relation(fields: [branchId], references: [id])
+
+  name         String
+  holidayDate  DateTime
+
+  type         HolidayType @default(COMPANY)
+
+  recurring    Boolean     @default(false)
+
+  isActive     Boolean     @default(true)
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([companyId])
+  @@index([branchId])
+  @@index([holidayDate])
+}
+
+model Customer {
+  id                String           @id @default(uuid())
+
+  companyId         String
+  company           Company          @relation(fields: [companyId], references: [id])
+
+  branchId          String
+  branch            Branch           @relation(fields: [branchId], references: [id])
+
+  customerCode      String           @unique
+
+  firstName         String
+  lastName          String?
+
+  fullName          String
+
+  mobile            String           @unique
+  alternateMobile   String?
+
+  email             String?
+
+  subscriptions Subscription[]
+
+  customerType      CustomerType     @default(HOME)
+  status            CustomerStatus   @default(LEAD)
+
+  installationAddress String
+  village           String?
+  mandal            String?
+  district          String?
+  state             String?
+  pincode           String?
+
+  latitude          Float?
+  longitude         Float?
+
+  remarks           String?
+
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  deletedAt         DateTime?
+
+  @@index([companyId])
+  @@index([branchId])
+  @@index([customerCode])
+  @@index([mobile])
+}
+model Shift {
+  id             String   @id @default(uuid())
+
+  companyId      String
+  company        Company  @relation(fields: [companyId], references: [id])
+
+  code           String   @unique
+  name           String
+
+  startTime      String
+  endTime        String
+
+  graceMinutes   Int      @default(10)
+  halfDayMinutes Int?
+  overtimeAfter  Int?
+
+  weeklyOff      String?
+
+  isNightShift   Boolean  @default(false)
+  isActive       Boolean  @default(true)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+model Package {
+  id             String        @id @default(uuid())
+
+  companyId      String
+  company        Company       @relation(fields: [companyId], references: [id])
+
+  code           String        @unique
+  name           String
+
+  packageType    PackageType   @default(HOME)
+
+  downloadMbps   Int
+  uploadMbps     Int
+
+  monthlyPrice   Decimal       @db.Decimal(10,2)
+
+  gstPercentage  Decimal       @default(18) @db.Decimal(5,2)
+
+  billingCycle   BillingCycle  @default(MONTHLY)
+
+  validityDays   Int           @default(30)
+
+  fupLimitGb     Int?
+
+  description    String?
+
+  subscriptions Subscription[]
+
+  isActive       Boolean       @default(true)
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deletedAt      DateTime?
+
+  @@index([companyId])
+}
+
+model Subscription {
+  id                  String               @id @default(uuid())
+
+  customerId          String
+  customer            Customer             @relation(fields: [customerId], references: [id])
+
+  packageId           String
+  package             Package              @relation(fields: [packageId], references: [id])
+
+  monthlyPrice        Decimal              @db.Decimal(10,2)
+
+  installationCharge  Decimal?             @db.Decimal(10,2)
+
+  securityDeposit     Decimal?             @db.Decimal(10,2)
+
+  discountAmount      Decimal?             @db.Decimal(10,2)
+
+  billingDay          Int
+
+  startDate           DateTime
+
+  expiryDate          DateTime
+
+  autoRenew           Boolean              @default(true)
+
+  status              SubscriptionStatus   @default(PENDING)
+
+  remarks             String?
+
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
+
+  @@index([customerId])
+  @@index([packageId])
+  @@index([status])
+}
+
 enum DocumentType {
   PROFILE_PHOTO
   AADHAAR
@@ -283,4 +491,57 @@ enum DocumentType {
   EDUCATION_CERTIFICATE
   OTHER
 }
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LEAVE
+  HOLIDAY
+  HALF_DAY
+}
 
+enum ShiftType {
+  GENERAL
+  MORNING
+  EVENING
+  NIGHT
+}
+enum HolidayType {
+  NATIONAL
+  STATE
+  COMPANY
+  OPTIONAL
+}
+enum CustomerType {
+  HOME
+  BUSINESS
+  ENTERPRISE
+  GOVERNMENT
+}
+
+enum CustomerStatus {
+  LEAD
+  PENDING_INSTALLATION
+  ACTIVE
+  SUSPENDED
+  DISCONNECTED
+  TERMINATED
+}
+enum PackageType {
+  HOME
+  BUSINESS
+  ENTERPRISE
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  HALF_YEARLY
+  YEARLY
+}
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  EXPIRED
+  TERMINATED
+}

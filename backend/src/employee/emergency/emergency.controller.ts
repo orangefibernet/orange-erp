@@ -25,7 +25,7 @@ import { CreateEmergencyDto } from './dto/create-emergency.dto';
 import { UpdateEmergencyDto } from './dto/update-emergency.dto';
 
 @ApiTags('Employee Emergency')
-@ApiBearerAuth()
+@ApiBearerAuth('JWT')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('employees/:employeeId/emergency')
 export class EmergencyController {

@@ -26,7 +26,7 @@ import { EmployeeDocumentsService } from './employee-documents.service';
 import { CreateEmployeeDocumentDto } from './dto/create-employee-document.dto';
 
 @ApiTags('Employee Documents')
-@ApiBearerAuth()
+@ApiBearerAuth('JWT')
 @UseGuards(JwtAuthGuard)
 @Controller('employee-documents')
 export class EmployeeDocumentsController {

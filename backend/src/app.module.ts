@@ -12,7 +12,7 @@ import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-
+import { EmployeeBankModule } from './employee-bank/employee-bank.module';
 import { CompanyModule } from './company/company.module';
 import { BranchModule } from './branch/branch.module';
 import { DepartmentModule } from './department/department.module';
@@ -22,6 +22,15 @@ import { AuditModule } from './audit/audit.module';
 import { StorageModule } from './storage/storage.module';
 import { CounterModule } from './counter/counter.module';
 import { EmployeeDocumentsModule } from './employee-documents/employee-documents.module';
+import { EmployeeEmergencyContactModule } from './employee-emergency-contact/employee-emergency-contact.module';
+import { EmployeeDocumentModule } from './employee-document/employee-document.module';
+import { AttendanceModule } from './attendance/attendance.module';
+import { ShiftModule } from './shift/shift.module';
+import { HolidayModule } from './holiday/holiday.module';
+import { CustomerModule } from './customer/customer.module';
+import { PackageModule } from './package/package.module';
+import { SubscriptionModule } from './subscription/subscription.module';
+
 
 
 
@@ -36,6 +45,7 @@ import { EmployeeDocumentsModule } from './employee-documents/employee-documents
         authConfig,
         databaseConfig,
         swaggerConfig,
+        
       ],
     }),
 
@@ -43,7 +53,7 @@ import { EmployeeDocumentsModule } from './employee-documents/employee-documents
     HealthModule,
     AuthModule,
     UsersModule,
-
+    EmployeeBankModule,
     CompanyModule,
     BranchModule,
     DepartmentModule,
@@ -53,6 +63,14 @@ import { EmployeeDocumentsModule } from './employee-documents/employee-documents
     StorageModule,
     CounterModule,
     EmployeeDocumentsModule,
+    EmployeeEmergencyContactModule,
+    EmployeeDocumentModule,
+    AttendanceModule,
+    ShiftModule,
+    HolidayModule,
+    CustomerModule,
+    PackageModule,
+    SubscriptionModule,
     
   ],
 })
