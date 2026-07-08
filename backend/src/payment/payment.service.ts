@@ -6,13 +6,16 @@ import {
 
 import { PrismaService } from '../database/prisma.service';
 import { BillingStatus } from '@prisma/client';
-
+import { CounterService } from '../counter/counter.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 
 @Injectable()
 export class PaymentService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+  private readonly prisma: PrismaService,
+  private readonly counterService: CounterService,
+) {}
 
   async create(dto: CreatePaymentDto) {
     const billing = await this.prisma.billing.findUnique({
@@ -40,6 +43,8 @@ export class PaymentService {
         'Payment exceeds outstanding balance',
       );
     }
+    const receiptNumber =
+        await this.counterService.nextYearly('RCP');
 
     const payment = await this.prisma.payment.create({
       data: {
@@ -48,7 +53,7 @@ export class PaymentService {
             id: dto.billingId,
           },
         },
-        receiptNumber: dto.receiptNumber,
+        receiptNumber,
         amount: dto.amount,
         paymentMethod: dto.paymentMethod,
         transactionId: dto.transactionId,

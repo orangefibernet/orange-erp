@@ -14,9 +14,6 @@ export class CreatePaymentDto {
   @IsUUID()
   billingId: string;
 
-  @IsString()
-  receiptNumber: string;
-
   @IsNumber()
   @Min(0.01)
   amount: number;
