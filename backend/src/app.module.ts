@@ -6,6 +6,12 @@ import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 
+import { CompanyModule } from './company/company.module';
+import { BranchModule } from './branch/branch.module';
+import { DepartmentModule } from './department/department.module';
+import { DesignationModule } from './designation/designation.module';
+import { EmployeeModule } from './employee/employee.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -16,6 +22,12 @@ import { UsersModule } from './users/users.module';
     HealthModule,
     AuthModule,
     UsersModule,
+
+    CompanyModule,
+    BranchModule,
+    DepartmentModule,
+    DesignationModule,
+    EmployeeModule,
   ],
 })
 export class AppModule {}

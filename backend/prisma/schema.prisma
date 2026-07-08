@@ -8,12 +8,127 @@ datasource db {
 }
 
 model Company {
-  id        String   @id @default(uuid())
-  name      String
-  code      String   @unique
-  email     String?
-  phone     String?
-  isActive  Boolean  @default(true)
+  id       String  @id @default(uuid())
+  name     String
+  code     String  @unique
+  email    String?
+  phone    String?
+  isActive Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  users        User[]
+  branches     Branch[]
+  departments  Department[]
+  designations Designation[]
+  employees    Employee[]
+}
+
+model Branch {
+  id String @id @default(uuid())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  code    String
+  name    String
+  address String?
+  phone   String?
+  email   String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  departments Department[]
+  employees   Employee[]
+
+  @@unique([companyId, code])
+}
+
+model Department {
+  id String @id @default(uuid())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  branchId String
+  branch   Branch @relation(fields: [branchId], references: [id])
+
+  code String
+  name String
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  employees Employee[]
+
+  @@unique([branchId, code])
+}
+
+model Designation {
+  id String @id @default(uuid())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  code String
+  name String
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  employees Employee[]
+
+  @@unique([companyId, code])
+}
+
+model Employee {
+  id String @id @default(uuid())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  branchId String
+  branch   Branch @relation(fields: [branchId], references: [id])
+
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  designationId String
+  designation   Designation @relation(fields: [designationId], references: [id])
+
+  employeeCode String
+  fullName     String
+  email        String?
+  mobile       String?
+
+  joiningDate DateTime
+  salary      Decimal? @db.Decimal(12, 2)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@unique([companyId, employeeCode])
+}
+
+model Role {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -21,34 +136,23 @@ model Company {
   users User[]
 }
 
-model Role {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  users User[]
-}
-
 model User {
-  id           String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  companyId    String
-  company       Company @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
-  roleId       String
-  role          Role    @relation(fields: [roleId], references: [id])
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id])
 
-  username     String   @unique
-  email        String   @unique
+  username     String @unique
+  email        String @unique
   passwordHash String
   fullName     String
 
-  isActive     Boolean  @default(true)
-  lastLogin    DateTime?
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
