@@ -8,19 +8,19 @@ datasource db {
 }
 
 model Company {
-  id       String  @id @default(uuid())
-  name     String
-  code     String  @unique
-  email    String?
-  phone    String?
-  isActive Boolean @default(true)
-  shifts Shift[]
-  holidays Holiday[]
+  id        String     @id @default(uuid())
+  name      String
+  code      String     @unique
+  email     String?
+  phone     String?
+  isActive  Boolean    @default(true)
+  shifts    Shift[]
+  holidays  Holiday[]
   customers Customer[]
-  packages Package[]
-  olts Olt[]
-  onus Onu[]
-  ponPorts PonPort[]
+  packages  Package[]
+  olts      Olt[]
+  onus      Onu[]
+  ponPorts  PonPort[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -53,11 +53,11 @@ model Branch {
 
   departments Department[]
   employees   Employee[]
-  holidays Holiday[]
-  customers Customer[]
-  olts Olt[]
-  onus Onu[]
-  ponPorts PonPort[]
+  holidays    Holiday[]
+  customers   Customer[]
+  olts        Olt[]
+  onus        Onu[]
+  ponPorts    PonPort[]
 
   @@unique([companyId, code])
 }
@@ -109,28 +109,28 @@ model Employee {
   id String @id @default(uuid())
 
   companyId String
-  company Company @relation(fields: [companyId], references: [id])
+  company   Company @relation(fields: [companyId], references: [id])
 
   branchId String
-  branch Branch @relation(fields: [branchId], references: [id])
+  branch   Branch @relation(fields: [branchId], references: [id])
 
   departmentId String
-  department Department @relation(fields: [departmentId], references: [id])
+  department   Department @relation(fields: [departmentId], references: [id])
 
   designationId String
-  designation Designation @relation(fields: [designationId], references: [id])
+  designation   Designation @relation(fields: [designationId], references: [id])
 
   employeeCode String
 
   firstName String
-  lastName String?
-  fullName String
+  lastName  String?
+  fullName  String
 
   gender String?
 
   dateOfBirth DateTime?
 
-  email String?
+  email  String?
   mobile String?
 
   joiningDate DateTime
@@ -142,22 +142,22 @@ model Employee {
   biometricId String?
 
   profilePhoto String?
-  
-  bankDetails EmployeeBank?
-  salary Decimal? @db.Decimal(12,2)
+
+  bankDetails      EmployeeBank?
+  salary           Decimal?                  @db.Decimal(12, 2)
   emergencyContact EmployeeEmergencyContact?
 
-  documents EmployeeDocument[]
+  documents   EmployeeDocument[]
   attendances Attendance[]
 
-  managerId String?
-  manager Employee? @relation("EmployeeManager", fields: [managerId], references: [id])
+  managerId    String?
+  manager      Employee?  @relation("EmployeeManager", fields: [managerId], references: [id])
   subordinates Employee[] @relation("EmployeeManager")
 
   isActive Boolean @default(true)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   @@unique([companyId, employeeCode])
@@ -177,9 +177,9 @@ model Role {
 }
 
 model Permission {
-  id          String @id @default(uuid())
+  id String @id @default(uuid())
 
-  code        String @unique
+  code        String  @unique
   name        String
   description String?
 
@@ -193,7 +193,7 @@ model RolePermission {
   roleId       String
   permissionId String
 
-  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@id([roleId, permissionId])
@@ -219,19 +219,20 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
 model EmployeeBank {
   id String @id @default(uuid())
 
-  employeeId String @unique
-  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId String   @unique
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
-  bankName String
+  bankName          String
   accountHolderName String
-  accountNumber String
-  ifscCode String
+  accountNumber     String
+  ifscCode          String
 
   branchName String?
-  upiId String?
+  upiId      String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -240,13 +241,13 @@ model EmployeeBank {
 model EmployeeEmergencyContact {
   id String @id @default(uuid())
 
-  employeeId String @unique
-  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId String   @unique
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
-  name String
+  name         String
   relationship String
-  mobile String
-  address String?
+  mobile       String
+  address      String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -256,11 +257,11 @@ model EmployeeDocument {
   id String @id @default(uuid())
 
   employeeId String
-  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   documentType DocumentType
 
-  fileName String
+  fileName  String
   objectKey String
 
   mimeType String
@@ -275,60 +276,60 @@ model EmployeeDocument {
 }
 
 model Counter {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  value     Int      @default(0)
+  id    String @id @default(cuid())
+  name  String @unique
+  value Int    @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Attendance {
-  id              String             @id @default(uuid())
-  employeeId      String
-  employee        Employee           @relation(fields: [employeeId], references: [id])
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
 
-  attendanceDate  DateTime
+  attendanceDate DateTime
 
-  checkIn         DateTime?
-  checkOut        DateTime?
+  checkIn  DateTime?
+  checkOut DateTime?
 
-  workingHours    Float?
-  overtimeHours   Float? @default(0)
+  workingHours  Float?
+  overtimeHours Float? @default(0)
 
-  status          AttendanceStatus   @default(PRESENT)
+  status AttendanceStatus @default(PRESENT)
 
-  shift           ShiftType          @default(GENERAL)
+  shift ShiftType @default(GENERAL)
 
-  remarks         String?
+  remarks String?
 
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([employeeId, attendanceDate])
   @@index([attendanceDate])
 }
 
 model Holiday {
-  id          String      @id @default(uuid())
+  id String @id @default(uuid())
 
-  companyId   String
-  company      Company     @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
-  branchId    String?
-  branch       Branch?     @relation(fields: [branchId], references: [id])
+  branchId String?
+  branch   Branch? @relation(fields: [branchId], references: [id])
 
-  name         String
-  holidayDate  DateTime
+  name        String
+  holidayDate DateTime
 
-  type         HolidayType @default(COMPANY)
+  type HolidayType @default(COMPANY)
 
-  recurring    Boolean     @default(false)
+  recurring Boolean @default(false)
 
-  isActive     Boolean     @default(true)
+  isActive Boolean @default(true)
 
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([companyId])
   @@index([branchId])
@@ -336,154 +337,155 @@ model Holiday {
 }
 
 model Customer {
-  id                String           @id @default(uuid())
+  id String @id @default(uuid())
 
-  companyId         String
-  company           Company          @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
-  branchId          String
-  branch            Branch           @relation(fields: [branchId], references: [id])
+  branchId String
+  branch   Branch @relation(fields: [branchId], references: [id])
 
-  customerCode      String           @unique
+  customerCode String @unique
 
-  firstName         String
-  lastName          String?
+  firstName String
+  lastName  String?
 
-  fullName          String
+  fullName String
 
-  mobile            String           @unique
-  alternateMobile   String?
+  mobile          String  @unique
+  alternateMobile String?
 
-  email             String?
+  email String?
 
   subscriptions Subscription[]
-  connections Connection[]
+  connections   Connection[]
 
-  customerType      CustomerType     @default(HOME)
-  status            CustomerStatus   @default(LEAD)
+  customerType CustomerType   @default(HOME)
+  status       CustomerStatus @default(LEAD)
 
   installationAddress String
-  village           String?
-  mandal            String?
-  district          String?
-  state             String?
-  pincode           String?
+  village             String?
+  mandal              String?
+  district            String?
+  state               String?
+  pincode             String?
 
-  latitude          Float?
-  longitude         Float?
+  latitude  Float?
+  longitude Float?
 
-  remarks           String?
+  remarks String?
 
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  deletedAt         DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@index([companyId])
   @@index([branchId])
   @@index([customerCode])
   @@index([mobile])
 }
+
 model Shift {
-  id             String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  companyId      String
-  company        Company  @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
-  code           String   @unique
-  name           String
+  code String @unique
+  name String
 
-  startTime      String
-  endTime        String
+  startTime String
+  endTime   String
 
-  graceMinutes   Int      @default(10)
+  graceMinutes   Int  @default(10)
   halfDayMinutes Int?
   overtimeAfter  Int?
 
-  weeklyOff      String?
+  weeklyOff String?
 
-  isNightShift   Boolean  @default(false)
-  isActive       Boolean  @default(true)
+  isNightShift Boolean @default(false)
+  isActive     Boolean @default(true)
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([companyId])
 }
 
 model Package {
-  id             String        @id @default(uuid())
+  id String @id @default(uuid())
 
-  companyId      String
-  company        Company       @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
-  code           String        @unique
-  name           String
+  code String @unique
+  name String
 
-  packageType    PackageType   @default(HOME)
+  packageType PackageType @default(HOME)
 
-  downloadMbps   Int
-  uploadMbps     Int
+  downloadMbps Int
+  uploadMbps   Int
 
-  monthlyPrice   Decimal       @db.Decimal(10,2)
+  monthlyPrice Decimal @db.Decimal(10, 2)
 
-  gstPercentage  Decimal       @default(18) @db.Decimal(5,2)
+  gstPercentage Decimal @default(18) @db.Decimal(5, 2)
 
-  billingCycle   BillingCycle  @default(MONTHLY)
+  billingCycle BillingCycle @default(MONTHLY)
 
-  validityDays   Int           @default(30)
+  validityDays Int @default(30)
 
-  fupLimitGb     Int?
+  fupLimitGb Int?
 
-  description    String?
+  description String?
 
   subscriptions Subscription[]
 
-  isActive       Boolean       @default(true)
+  isActive Boolean @default(true)
 
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  deletedAt      DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@index([companyId])
 }
 
 model Subscription {
-  id                  String               @id @default(uuid())
+  id String @id @default(uuid())
 
-  customerId          String
-  customer            Customer             @relation(fields: [customerId], references: [id])
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
 
-  packageId           String
-  package             Package              @relation(fields: [packageId], references: [id])
+  packageId String
+  package   Package @relation(fields: [packageId], references: [id])
 
-  monthlyPrice        Decimal              @db.Decimal(10,2)
-  
+  monthlyPrice Decimal @db.Decimal(10, 2)
+
   billingCycle BillingCycle @default(MONTHLY)
 
-  installationCharge  Decimal?             @db.Decimal(10,2)
+  installationCharge Decimal? @db.Decimal(10, 2)
 
-  securityDeposit     Decimal?             @db.Decimal(10,2)
+  securityDeposit Decimal? @db.Decimal(10, 2)
 
-  discountAmount      Decimal?             @db.Decimal(10,2)
+  discountAmount Decimal? @db.Decimal(10, 2)
 
-  billingDay          Int
+  billingDay Int
 
-  startDate           DateTime
+  startDate DateTime
 
-  expiryDate          DateTime
+  expiryDate DateTime
 
-  autoRenew           Boolean              @default(true)
+  autoRenew Boolean @default(true)
 
-  status              SubscriptionStatus   @default(PENDING)
+  status SubscriptionStatus @default(PENDING)
 
-  remarks             String?
+  remarks String?
 
   connections Connection[]
-  billings Billing[]
+  billings    Billing[]
 
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  deletedAt           DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@index([customerId])
   @@index([packageId])
@@ -491,49 +493,49 @@ model Subscription {
 }
 
 model Connection {
-  id                 String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  customerId         String
-  customer           Customer @relation(fields: [customerId], references: [id])
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
 
-  subscriptionId     String
-  subscription       Subscription @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
 
   // Network Inventory Relation
-  onuId              String?
-  onu                Onu? @relation(fields: [onuId], references: [id])
+  onuId String?
+  onu   Onu?    @relation(fields: [onuId], references: [id])
 
   // Service Details
-  connectionNumber   String @unique
+  connectionNumber String @unique
 
-  pppoeUsername      String @unique
-  pppoePassword      String
+  pppoeUsername String @unique
+  pppoePassword String
 
-  vlanId             Int?
+  vlanId Int?
 
-  staticIp           String?
+  staticIp String?
 
-  macAddress         String?
+  macAddress String?
 
-  installationDate   DateTime?
+  installationDate DateTime?
 
-  activationDate     DateTime?
+  activationDate DateTime?
 
-  disconnectedDate   DateTime?
+  disconnectedDate DateTime?
 
   // Audit
-  installedBy        String?
-  activatedBy        String?
+  installedBy String?
+  activatedBy String?
 
-  lastSyncAt         DateTime?
+  lastSyncAt DateTime?
 
-  status             ConnectionStatus @default(PENDING)
+  status ConnectionStatus @default(PENDING)
 
-  remarks            String?
+  remarks String?
 
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  deletedAt          DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@index([customerId])
   @@index([subscriptionId])
@@ -541,182 +543,183 @@ model Connection {
   @@index([pppoeUsername])
   @@index([connectionNumber])
 }
+
 model Billing {
-  id             String        @id @default(uuid())
+  id String @id @default(uuid())
 
   subscriptionId String
-  subscription   Subscription  @relation(fields: [subscriptionId], references: [id])
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
 
-  billingMonth   Int
-  billingYear    Int
+  billingMonth Int
+  billingYear  Int
 
-  invoiceNumber  String        @unique
+  invoiceNumber String @unique
 
-  amount         Decimal       @db.Decimal(10,2)
-  gstAmount      Decimal       @db.Decimal(10,2)
+  amount Decimal @db.Decimal(10, 2)
 
-  totalAmount    Decimal       @db.Decimal(10,2)
+  gstPercentage Decimal @default(18) @db.Decimal(5, 2)
+  gstAmount     Decimal @db.Decimal(10, 2)
 
-  dueDate        DateTime
+  totalAmount Decimal @db.Decimal(10, 2)
 
-  paidDate       DateTime?
+  dueDate DateTime
 
-  status         BillingStatus @default(PENDING)
+  paidDate DateTime?
 
-  remarks        String?
+  status BillingStatus @default(PENDING)
+
+  remarks String?
+
   payments Payment[]
 
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  deletedAt      DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@unique([subscriptionId, billingMonth, billingYear])
   @@index([status])
 }
 
 model Payment {
-  id              String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  billingId       String
-  billing         Billing  @relation(fields: [billingId], references: [id])
+  billingId String
+  billing   Billing @relation(fields: [billingId], references: [id])
 
-  receiptNumber   String   @unique
+  receiptNumber String @unique
 
-  amount          Decimal  @db.Decimal(10,2)
+  amount Decimal @db.Decimal(10, 2)
 
-  paymentMethod   PaymentMethod
+  paymentMethod PaymentMethod
 
-  transactionId   String?
+  transactionId String?
 
-  paymentDate     DateTime @default(now())
+  paymentDate DateTime @default(now())
 
-  collectedBy     String?
+  collectedBy String?
 
-  remarks         String?
+  remarks String?
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  deletedAt       DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@index([billingId])
   @@index([paymentDate])
 }
 
 model Olt {
-  id          String      @id @default(uuid())
+  id String @id @default(uuid())
 
-  companyId   String
-  company     Company     @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
-  branchId    String?
-  branch      Branch?     @relation(fields: [branchId], references: [id])
+  branchId String?
+  branch   Branch? @relation(fields: [branchId], references: [id])
 
-  name        String
-  vendor      OltVendor
+  name   String
+  vendor OltVendor
 
-  model       String
+  model String
 
   managementIp String
 
   snmpCommunity String?
 
-  sshPort     Int @default(22)
+  sshPort Int @default(22)
 
-  location    String?
+  location String?
 
-  onus Onu[]
+  onus     Onu[]
   ponPorts PonPort[]
 
-  status      OltStatus @default(ACTIVE)
+  status OltStatus @default(ACTIVE)
 
-  remarks     String?
+  remarks String?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@unique([companyId, name])
   @@unique([companyId, managementIp])
-
   @@index([companyId])
   @@index([branchId])
 }
 
 model Onu {
-  id            String      @id @default(uuid())
+  id String @id @default(uuid())
 
-  companyId     String
-  company       Company     @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
-  branchId      String?
-  branch        Branch?     @relation(fields: [branchId], references: [id])
+  branchId String?
+  branch   Branch? @relation(fields: [branchId], references: [id])
 
-  oltId         String
-  olt           Olt         @relation(fields: [oltId], references: [id])
+  oltId String
+  olt   Olt    @relation(fields: [oltId], references: [id])
 
-  serialNumber  String      @unique
-  vendor        OnuVendor
-  model         String
+  serialNumber String    @unique
+  vendor       OnuVendor
+  model        String
 
   ponPortId String
   ponPort   PonPort @relation(fields: [ponPortId], references: [id])
-  onuId         Int
+  onuId     Int
 
-  macAddress    String?
+  macAddress String?
 
-  status        OnuStatus   @default(OFFLINE)
+  status OnuStatus @default(OFFLINE)
 
-  rxPower       Float?
-  txPower       Float?
+  rxPower Float?
+  txPower Float?
 
-  distance      Float?
+  distance Float?
 
-  installedAt   DateTime?
+  installedAt DateTime?
 
-  remarks       String?
+  remarks     String?
   connections Connection[]
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  deletedAt     DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@unique([ponPortId, onuId])
-
   @@index([companyId])
   @@index([branchId])
   @@index([oltId])
 }
 
 model PonPort {
-  id          String @id @default(uuid())
+  id String @id @default(uuid())
 
-  companyId   String
-  company     Company @relation(fields: [companyId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
-  branchId    String?
-  branch      Branch? @relation(fields: [branchId], references: [id])
+  branchId String?
+  branch   Branch? @relation(fields: [branchId], references: [id])
 
-  oltId       String
-  olt         Olt @relation(fields: [oltId], references: [id])
+  oltId String
+  olt   Olt    @relation(fields: [oltId], references: [id])
 
-  name        String          // GPON1/1
-  portNumber  Int             // 1
-  splitter    String?         // 1:64
-  capacity    Int @default(64)
+  name       String // GPON1/1
+  portNumber Int // 1
+  splitter   String? // 1:64
+  capacity   Int     @default(64)
 
-  status      PonPortStatus @default(ACTIVE)
+  status PonPortStatus @default(ACTIVE)
 
-  remarks     String?
+  remarks String?
 
-  onus        Onu[]
+  onus Onu[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@unique([oltId, portNumber])
   @@unique([oltId, name])
-
   @@index([companyId])
   @@index([branchId])
   @@index([oltId])
@@ -735,6 +738,7 @@ enum DocumentType {
   EDUCATION_CERTIFICATE
   OTHER
 }
+
 enum AttendanceStatus {
   PRESENT
   ABSENT
@@ -749,12 +753,14 @@ enum ShiftType {
   EVENING
   NIGHT
 }
+
 enum HolidayType {
   NATIONAL
   STATE
   COMPANY
   OPTIONAL
 }
+
 enum CustomerType {
   HOME
   BUSINESS
@@ -770,6 +776,7 @@ enum CustomerStatus {
   DISCONNECTED
   TERMINATED
 }
+
 enum PackageType {
   HOME
   BUSINESS
@@ -782,6 +789,7 @@ enum BillingCycle {
   HALF_YEARLY
   YEARLY
 }
+
 enum SubscriptionStatus {
   PENDING
   ACTIVE
@@ -789,12 +797,14 @@ enum SubscriptionStatus {
   EXPIRED
   TERMINATED
 }
+
 enum ConnectionStatus {
   PENDING
   ACTIVE
   SUSPENDED
   DISCONNECTED
 }
+
 enum BillingStatus {
   PENDING
   GENERATED

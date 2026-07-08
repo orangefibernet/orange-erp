@@ -1,12 +1,19 @@
 import { Controller, Get, Param, Post } from '@nestjs/common';
 import { BillingService } from './billing.service';
+import { Body } from '@nestjs/common';
+import { CreateBillingDto } from './dto/create-billing.dto';
 
 @Controller('billing')
 export class BillingController {
   constructor(
     private readonly billingService: BillingService,
   ) {}
-
+@Post('generate-one')
+async generateOne(
+  @Body() dto: CreateBillingDto,
+) {
+  return this.billingService.generateOne(dto);
+}
   @Post('generate')
   async generateBills() {
     const generated =
