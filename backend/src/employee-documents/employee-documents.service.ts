@@ -60,4 +60,62 @@ export class EmployeeDocumentsService {
       data: document,
     };
   }
+
+  // ✅ Correct place
+  async findByEmployee(employeeId: string) {
+    return this.prisma.employeeDocument.findMany({
+      where: {
+        employeeId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+async download(documentId: string) {
+  const document = await this.prisma.employeeDocument.findUnique({
+    where: {
+      id: documentId,
+    },
+  });
+
+  if (!document) {
+    throw new NotFoundException('Document not found');
+  }
+
+  const url = await this.storage.getPresignedUrl(
+    document.objectKey,
+  );
+
+  return {
+    documentId: document.id,
+    fileName: document.fileName,
+    documentType: document.documentType,
+    downloadUrl: url,
+  };
+}
+async remove(documentId: string) {
+  const document = await this.prisma.employeeDocument.findUnique({
+    where: {
+      id: documentId,
+    },
+  });
+
+  if (!document) {
+    throw new NotFoundException('Document not found');
+  }
+
+  await this.storage.delete(document.objectKey);
+
+  await this.prisma.employeeDocument.delete({
+    where: {
+      id: documentId,
+    },
+  });
+
+  return {
+    success: true,
+    message: 'Document deleted successfully.',
+  };
+}
 }

@@ -1,12 +1,15 @@
 import {
   Body,
   Controller,
+  Delete,
+  Get,
   Param,
   Post,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+
 import {
   ApiBearerAuth,
   ApiBody,
@@ -31,6 +34,13 @@ export class EmployeeDocumentsController {
     private readonly service: EmployeeDocumentsService,
   ) {}
 
+  @Get('employee/:employeeId')
+@ApiOperation({ summary: 'List Employee Documents' })
+findByEmployee(
+  @Param('employeeId') employeeId: string,
+) {
+  return this.service.findByEmployee(employeeId);
+}
   @Post(':employeeId')
   @ApiOperation({ summary: 'Upload Employee Document' })
   @ApiConsumes('multipart/form-data')
@@ -71,4 +81,11 @@ export class EmployeeDocumentsController {
       dto,
     );
   }
+  @Delete(':id')
+@ApiOperation({ summary: 'Delete Employee Document' })
+remove(
+  @Param('id') id: string,
+) {
+  return this.service.remove(id);
+}
 }
