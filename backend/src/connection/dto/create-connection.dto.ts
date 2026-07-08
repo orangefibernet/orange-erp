@@ -2,23 +2,21 @@ import {
   IsDateString,
   IsEnum,
   IsInt,
-  IsIP,
   IsOptional,
   IsString,
-  IsUUID,
 } from 'class-validator';
 
 import { ConnectionStatus } from '@prisma/client';
 
 export class CreateConnectionDto {
-  @IsUUID()
+  @IsString()
   customerId: string;
 
-  @IsUUID()
+  @IsString()
   subscriptionId: string;
 
   @IsOptional()
-  @IsUUID()
+  @IsString()
   onuId?: string;
 
   @IsString()
@@ -35,7 +33,7 @@ export class CreateConnectionDto {
   vlanId?: number;
 
   @IsOptional()
-  @IsIP()
+  @IsString()
   staticIp?: string;
 
   @IsOptional()

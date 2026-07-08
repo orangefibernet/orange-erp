@@ -7,7 +7,6 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-
 import {
   ApiOperation,
   ApiTags,
@@ -31,13 +30,13 @@ export class ConnectionController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List Connections' })
+  @ApiOperation({ summary: 'Get All Connections' })
   findAll() {
     return this.connectionService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get Connection' })
+  @ApiOperation({ summary: 'Get Connection By Id' })
   findOne(@Param('id') id: string) {
     return this.connectionService.findOne(id);
   }

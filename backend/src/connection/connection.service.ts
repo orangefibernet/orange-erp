@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,43 +13,83 @@ import { UpdateConnectionDto } from './dto/update-connection.dto';
 export class ConnectionService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(dto: CreateConnectionDto) {
-    const { customerId, subscriptionId, onuId, ...data } = dto;
+  async create(dto: CreateConnectionDto) {
+    const existingConnection =
+      await this.prisma.connection.findFirst({
+        where: {
+          OR: [
+            {
+              connectionNumber: dto.connectionNumber,
+            },
+            {
+              pppoeUsername: dto.pppoeUsername,
+            },
+          ],
+        },
+      });
+
+    if (existingConnection) {
+      throw new ConflictException(
+        'Connection number or PPPoE username already exists',
+      );
+    }
 
     return this.prisma.connection.create({
       data: {
-        ...data,
-
         customer: {
           connect: {
-            id: customerId,
+            id: dto.customerId,
           },
         },
 
         subscription: {
           connect: {
-            id: subscriptionId,
+            id: dto.subscriptionId,
           },
         },
 
-        ...(onuId && {
+        ...(dto.onuId && {
           onu: {
             connect: {
-              id: onuId,
+              id: dto.onuId,
             },
           },
         }),
-      },
-      include: {
-        customer: true,
-        subscription: true,
-        onu: true,
+
+        connectionNumber: dto.connectionNumber,
+        pppoeUsername: dto.pppoeUsername,
+        pppoePassword: dto.pppoePassword,
+
+        vlanId: dto.vlanId,
+        staticIp: dto.staticIp,
+        macAddress: dto.macAddress,
+
+        installationDate: dto.installationDate
+          ? new Date(dto.installationDate)
+          : undefined,
+
+        activationDate: dto.activationDate
+          ? new Date(dto.activationDate)
+          : undefined,
+
+        disconnectedDate: dto.disconnectedDate
+          ? new Date(dto.disconnectedDate)
+          : undefined,
+
+        installedBy: dto.installedBy,
+        activatedBy: dto.activatedBy,
+
+        status: dto.status,
+        remarks: dto.remarks,
       },
     });
   }
 
-  findAll() {
+  async findAll() {
     return this.prisma.connection.findMany({
+      where: {
+        deletedAt: null,
+      },
       include: {
         customer: true,
         subscription: true,
@@ -61,29 +102,68 @@ export class ConnectionService {
   }
 
   async findOne(id: string) {
-    const connection = await this.prisma.connection.findUnique({
-      where: { id },
-      include: {
-        customer: true,
-        subscription: true,
-        onu: true,
-      },
-    });
+    const connection =
+      await this.prisma.connection.findFirst({
+        where: {
+          id,
+          deletedAt: null,
+        },
+        include: {
+          customer: true,
+          subscription: true,
+          onu: true,
+        },
+      });
 
     if (!connection) {
-      throw new NotFoundException('Connection not found');
+      throw new NotFoundException(
+        'Connection not found',
+      );
     }
 
     return connection;
   }
 
-  update(id: string, dto: UpdateConnectionDto) {
-    const { customerId, subscriptionId, onuId, ...data } = dto;
+  async update(
+    id: string,
+    dto: UpdateConnectionDto,
+  ) {
+    await this.findOne(id);
+
+    const {
+      customerId,
+      subscriptionId,
+      onuId,
+      installationDate,
+      activationDate,
+      disconnectedDate,
+      ...data
+    } = dto;
 
     return this.prisma.connection.update({
-      where: { id },
+      where: {
+        id,
+      },
       data: {
         ...data,
+
+        ...(installationDate && {
+          installationDate: new Date(
+            installationDate,
+          ),
+        }),
+
+        ...(activationDate && {
+          activationDate: new Date(
+            activationDate,
+          ),
+        }),
+
+        ...(disconnectedDate && {
+          disconnectedDate: new Date(
+            disconnectedDate,
+          ),
+        }),
 
         ...(customerId && {
           customer: {
@@ -109,20 +189,18 @@ export class ConnectionService {
           },
         }),
       },
-      include: {
-        customer: true,
-        subscription: true,
-        onu: true,
-      },
     });
   }
 
   async remove(id: string) {
     await this.findOne(id);
 
-    return this.prisma.connection.delete({
+    return this.prisma.connection.update({
       where: {
         id,
+      },
+      data: {
+        deletedAt: new Date(),
       },
     });
   }
