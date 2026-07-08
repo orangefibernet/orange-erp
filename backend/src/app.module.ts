@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 
+
 import {
   appConfig,
   authConfig,
@@ -42,6 +43,8 @@ import { InvoiceModule } from './invoice/invoice.module';
 import { PaymentModule } from './payment/payment.module';
 import { BillingSchedulerModule } from './billing-scheduler/billing-scheduler.module';
 import { PdfModule } from './pdf/pdf.module';
+import { SchedulerModule } from './scheduler/scheduler.module';
+
 
 
 
@@ -94,6 +97,7 @@ import { PdfModule } from './pdf/pdf.module';
     PaymentModule,
     BillingSchedulerModule,
     PdfModule,
+    SchedulerModule,
     
   ],
 })
