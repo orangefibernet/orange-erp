@@ -20,6 +20,8 @@ import { DesignationModule } from './designation/designation.module';
 import { EmployeeModule } from './employee/employee.module';
 import { AuditModule } from './audit/audit.module';
 import { StorageModule } from './storage/storage.module';
+import { CounterModule } from './counter/counter.module';
+import { EmployeeDocumentsModule } from './employee-documents/employee-documents.module';
 
 
 
@@ -49,6 +51,8 @@ import { StorageModule } from './storage/storage.module';
     EmployeeModule,
     AuditModule,
     StorageModule,
+    CounterModule,
+    EmployeeDocumentsModule,
     
   ],
 })

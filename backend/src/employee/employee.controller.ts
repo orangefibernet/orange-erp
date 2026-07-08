@@ -11,6 +11,8 @@ import {
 import { EmployeeService } from './employee.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { Query } from '@nestjs/common';
+import { QueryEmployeeDto } from './dto/query-employee.dto';
 
 @Controller('employees')
 export class EmployeeController {
@@ -22,9 +24,9 @@ export class EmployeeController {
   }
 
   @Get()
-  findAll() {
-    return this.employeeService.findAll();
-  }
+findAll(@Query() query: QueryEmployeeDto) {
+  return this.employeeService.findAll(query);
+}
 
   @Get(':id')
   findOne(@Param('id') id: string) {
