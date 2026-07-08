@@ -34,11 +34,11 @@ async function bootstrap() {
   // Global Exception Filter
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  // Global Response Interceptor
+  // Global Interceptors
   app.useGlobalInterceptors(
-  new LoggingInterceptor(),
-  new TransformInterceptor(),
-   );
+    new LoggingInterceptor(),
+    new TransformInterceptor(),
+  );
 
   // Swagger Configuration
   const swaggerConfig = new DocumentBuilder()
@@ -80,7 +80,7 @@ async function bootstrap() {
   console.log('🚀 OrangeERP Backend Started');
   console.log(`🌐 API Base URL : http://localhost:${port}/api/v1`);
   console.log(`📘 Swagger Docs: http://localhost:${port}/api/v1/docs`);
-  console.log(`❤️  Health Check: http://localhost:${port}/api/v1/health`);
+  console.log(`❤️ Health Check: http://localhost:${port}/api/v1/health`);
   console.log('========================================');
 }
 
