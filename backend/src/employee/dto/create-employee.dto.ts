@@ -24,7 +24,26 @@ export class CreateEmployeeDto {
 
   @ApiProperty()
   @IsString()
+  firstName: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
+  @ApiProperty()
+  @IsString()
   fullName: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  gender?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsDateString()
+  dateOfBirth?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -42,7 +61,27 @@ export class CreateEmployeeDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsDateString()
+  confirmationDate?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  employmentType?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  biometricId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNumber()
   @Min(0)
   salary?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  managerId?: string;
 }

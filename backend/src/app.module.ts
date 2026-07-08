@@ -18,6 +18,7 @@ import { BranchModule } from './branch/branch.module';
 import { DepartmentModule } from './department/department.module';
 import { DesignationModule } from './designation/designation.module';
 import { EmployeeModule } from './employee/employee.module';
+import { AuditModule } from './audit/audit.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { EmployeeModule } from './employee/employee.module';
     DepartmentModule,
     DesignationModule,
     EmployeeModule,
+    AuditModule,
   ],
 })
 export class AppModule {}
