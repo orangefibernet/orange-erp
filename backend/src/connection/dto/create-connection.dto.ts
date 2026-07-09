@@ -6,7 +6,10 @@ import {
   IsString,
 } from 'class-validator';
 
-import { ConnectionStatus } from '@prisma/client';
+import {
+  ConnectionStatus,
+  ServiceType,
+} from '@prisma/client';
 
 export class CreateConnectionDto {
   @IsString()
@@ -18,6 +21,14 @@ export class CreateConnectionDto {
   @IsOptional()
   @IsString()
   onuId?: string;
+
+  @IsOptional()
+  @IsString()
+  nasId?: string;
+
+  @IsOptional()
+  @IsEnum(ServiceType)
+  serviceType?: ServiceType;
 
   @IsString()
   connectionNumber: string;

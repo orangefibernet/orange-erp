@@ -8,20 +8,22 @@ datasource db {
 }
 
 model Company {
-  id        String     @id @default(uuid())
-  name      String
-  code      String     @unique
-  email     String?
-  phone     String?
-  isActive  Boolean    @default(true)
-  shifts    Shift[]
-  holidays  Holiday[]
-  customers Customer[]
-  packages  Package[]
-  olts      Olt[]
-  onus      Onu[]
-  ponPorts  PonPort[]
-  nases     Nas[]
+  id            String         @id @default(uuid())
+  name          String
+  code          String         @unique
+  email         String?
+  phone         String?
+  isActive      Boolean        @default(true)
+  shifts        Shift[]
+  holidays      Holiday[]
+  customers     Customer[]
+  packages      Package[]
+  olts          Olt[]
+  onus          Onu[]
+  ponPorts      PonPort[]
+  nases         Nas[]
+  ipPools       IpPool[]
+  radiusServers RadiusServer[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -52,14 +54,16 @@ model Branch {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  departments Department[]
-  employees   Employee[]
-  holidays    Holiday[]
-  customers   Customer[]
-  nases       Nas[]
-  olts        Olt[]
-  onus        Onu[]
-  ponPorts    PonPort[]
+  departments   Department[]
+  employees     Employee[]
+  holidays      Holiday[]
+  customers     Customer[]
+  nases         Nas[]
+  olts          Olt[]
+  onus          Onu[]
+  ponPorts      PonPort[]
+  ipPools       IpPool[]
+  radiusServers RadiusServer[]
 
   @@unique([companyId, code])
 }
@@ -359,8 +363,11 @@ model Customer {
 
   email String?
 
-  subscriptions Subscription[]
-  connections   Connection[]
+  subscriptions    Subscription[]
+  connections      Connection[]
+  provisioningLogs ProvisioningLog[]
+  ipAddresses      IpAddress[]
+  notifications Notification[]
 
   customerType CustomerType   @default(HOME)
   status       CustomerStatus @default(LEAD)
@@ -425,9 +432,15 @@ model Package {
 
   packageType PackageType @default(HOME)
 
+  // Bandwidth
   downloadMbps Int
   uploadMbps   Int
 
+  // Burst (optional)
+  burstDownloadMbps Int?
+  burstUploadMbps   Int?
+
+  // Pricing
   monthlyPrice Decimal @db.Decimal(10, 2)
 
   gstPercentage Decimal @default(18) @db.Decimal(5, 2)
@@ -438,17 +451,37 @@ model Package {
 
   fupLimitGb Int?
 
+  // Provisioning
+  radiusGroup String?
+
+  mikrotikProfile String?
+  ciscoPolicy     String?
+  huaweiProfile   String?
+  zteProfile      String?
+  nokiaProfile    String?
+
+  ipPool String?
+
+  priority Int @default(8)
+
+  simultaneousUse Int @default(1)
+
+  sessionTimeout Int?
+  idleTimeout    Int?
+
   description String?
 
   subscriptions Subscription[]
 
   isActive Boolean @default(true)
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   deletedAt DateTime?
 
   @@index([companyId])
+  @@index([radiusGroup])
+  @@index([isActive])
 }
 
 model Subscription {
@@ -494,6 +527,35 @@ model Subscription {
   @@index([status])
 }
 
+model ProvisioningJob {
+  id           String   @id @default(cuid())
+
+  queueJobId   String?  @unique
+
+  connectionId String
+  connection   Connection @relation(fields: [connectionId], references: [id])
+
+  action       String
+  status       String
+
+  attempts     Int      @default(0)
+
+  startedAt    DateTime?
+  completedAt  DateTime?
+
+  error        String?
+
+  payload       Json?
+  response      Json?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([connectionId])
+  @@index([status])
+  @@index([action])
+}
+
 model Connection {
   id String @id @default(uuid())
 
@@ -509,6 +571,7 @@ model Connection {
 
   nasId String?
   nas   Nas?    @relation(fields: [nasId], references: [id])
+  provisioningJobs ProvisioningJob[]
 
   serviceType ServiceType @default(PPPOE)
 
@@ -538,11 +601,12 @@ model Connection {
 
   status ConnectionStatus @default(PENDING)
 
-  remarks String?
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  remarks          String?
+  ipAddresses      IpAddress[]
+  provisioningLogs ProvisioningLog[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  deletedAt        DateTime?
 
   @@index([customerId])
   @@index([subscriptionId])
@@ -749,29 +813,120 @@ model Nas {
   ipAddress String
 
   username String
-
   password String
 
   apiPort Int?
-
-  sshPort Int @default(22)
+  sshPort Int  @default(22)
 
   isActive Boolean @default(true)
 
-  remarks String?
-
-  connections Connection[]
+  remarks     String?
   description String?
 
   radiusEnabled Boolean @default(false)
 
-  apiProtocol String? // API / SSH / TELNET / REST
-
-  apiTimeout Int @default(30)
+  apiProtocol String?
+  apiTimeout  Int     @default(30)
 
   location String?
 
   lastSyncAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+
+  defaultIpPoolId String?
+  defaultIpPool   IpPool? @relation("NasDefaultIpPool", fields: [defaultIpPoolId], references: [id])
+
+  ipPools     IpPool[]     @relation("NasIpPools")
+  connections Connection[]
+
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+model IpPool {
+  id String @id @default(uuid())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  branchId String?
+  branch   Branch? @relation(fields: [branchId], references: [id])
+
+  nasId String?
+  nas   Nas?    @relation("NasIpPools", fields: [nasId], references: [id])
+
+  defaultNas Nas[] @relation("NasDefaultIpPool")
+
+  name String
+
+  network    String
+  subnetMask Int
+
+  gateway String
+
+  startIp String
+  endIp   String
+
+  dns1 String?
+  dns2 String?
+
+  vlanId Int?
+
+  isActive Boolean @default(true)
+
+  remarks     String?
+  description String?
+
+  createdBy String?
+  updatedBy String?
+
+  deletedAt DateTime?
+
+  ipAddresses IpAddress[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([branchId])
+  @@index([nasId])
+}
+
+model RadiusServer {
+  id String @id @default(uuid())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  branchId String?
+  branch   Branch? @relation(fields: [branchId], references: [id])
+
+  name String
+
+  host String
+
+  authPort Int @default(1812)
+
+  acctPort Int @default(1813)
+
+  coaPort Int @default(3799)
+
+  secret String
+
+  timeout Int @default(30)
+
+  isActive Boolean @default(true)
+
+  version String?
+
+  description String?
+  remarks     String?
 
   createdBy String?
   updatedBy String?
@@ -782,6 +937,148 @@ model Nas {
   updatedAt DateTime @updatedAt
 
   @@index([companyId])
+  @@index([branchId])
+}
+
+model IpAddress {
+  id String @id @default(uuid())
+
+  ipPoolId String
+  ipPool   IpPool @relation(fields: [ipPoolId], references: [id])
+
+  ipAddress String
+
+  status IpAddressStatus @default(FREE)
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  connectionId String?
+  connection   Connection? @relation(fields: [connectionId], references: [id])
+
+  assignedAt DateTime?
+
+  releasedAt DateTime?
+
+  assignedBy String?
+
+  leasedUntil DateTime?
+
+  remarks String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([ipPoolId, ipAddress])
+  @@index([status])
+}
+
+model ProvisioningLog {
+  id String @id @default(uuid())
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  connectionId String?
+  connection   Connection? @relation(fields: [connectionId], references: [id])
+
+  action ProvisioningAction
+
+  status ProvisioningStatus
+
+  message String?
+
+  executedBy String?
+
+  executedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+
+  @@index([customerId])
+  @@index([connectionId])
+  @@index([executedAt])
+}
+
+model RadiusCheck {
+  id        Int    @id @default(autoincrement())
+  username  String @map("username")
+  attribute String @map("attribute")
+  op        String @default(":=") @map("op")
+  value     String @map("value")
+
+  @@map("radcheck")
+}
+
+model RadiusReply {
+  id        Int    @id @default(autoincrement())
+  username  String @map("username")
+  attribute String @map("attribute")
+  op        String @default(":=") @map("op")
+  value     String @map("value")
+
+  @@map("radreply")
+}
+
+model RadiusUserGroup {
+  username  String @map("username")
+  groupname String @map("groupname")
+  priority  Int    @default(1)
+
+  @@id([username, groupname])
+  @@map("radusergroup")
+}
+
+model RadiusGroupReply {
+  id        Int    @id @default(autoincrement())
+  groupname String @map("groupname")
+  attribute String @map("attribute")
+  op        String @default(":=") @map("op")
+  value     String @map("value")
+
+  @@map("radgroupreply")
+}
+
+model RadiusNas {
+  id          Int     @id @default(autoincrement())
+  nasname     String
+  shortname   String?
+  type        String?
+  ports       Int?
+  secret      String
+  server      String?
+  community   String?
+  description String?
+
+  @@map("nas")
+}
+
+model Notification {
+  id String @id @default(uuid())
+
+  customerId String?
+  customer Customer? @relation(fields: [customerId], references: [id])
+
+  employeeId String?
+
+  title String
+  message String
+
+  type NotificationType
+
+  isRead Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([isRead])
+  @@index([type])
+}
+
+enum IpAddressStatus {
+  FREE
+  RESERVED
+  ASSIGNED
 }
 
 enum NasVendor {
@@ -933,4 +1230,33 @@ enum PaymentMethod {
   CREDIT_CARD
   DEBIT_CARD
   ONLINE
+}
+
+enum ProvisioningStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum ProvisioningAction {
+  CREATE_CONNECTION
+  CREATE_RADIUS_USER
+  UPDATE_RADIUS_PASSWORD
+  DELETE_RADIUS_USER
+  ASSIGN_RADIUS_GROUP
+  REMOVE_RADIUS_GROUP
+  ALLOCATE_IP
+  RELEASE_IP
+  MIKROTIK_PROVISION
+  MIKROTIK_DISABLE
+  MIKROTIK_ENABLE
+  OLT_PROVISION
+  OLT_DEPROVISION
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
 }

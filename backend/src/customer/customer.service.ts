@@ -6,10 +6,11 @@ import {
 import { PrismaService } from '../database/prisma.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
+import { RadiusService } from '../radius/radius.service';
 
 @Injectable()
 export class CustomerService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly radiusService: RadiusService) {}
 
   async create(dto: CreateCustomerDto) {
     const {

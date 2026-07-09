@@ -1,0 +1,106 @@
+version: "3.9"
+
+services:
+
+  orange-postgres:
+    image: postgres:17
+    container_name: orange-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: orangeerp
+      POSTGRES_PASSWORD: OrangeERP@2026
+      POSTGRES_DB: orangeerp
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - orange_postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orangeerp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - orange-network
+
+
+  radius-postgres:
+    image: postgres:17
+    container_name: radius-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: radius
+      POSTGRES_PASSWORD: Radius@2026
+      POSTGRES_DB: radius
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - radius_postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U radius"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - orange-network
+
+
+  redis:
+    image: redis:8
+    container_name: orange-redis
+    restart: unless-stopped
+
+    ports:
+      - "6379:6379"
+
+    command: redis-server --appendonly yes
+
+    volumes:
+      - redis_data:/data
+
+    networks:
+      - orange-network
+
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: orange-pgadmin
+    restart: unless-stopped
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@orangeerp.local
+      PGADMIN_DEFAULT_PASSWORD: OrangeERP@2026
+
+    ports:
+      - "5050:80"
+
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+    depends_on:
+      - orange-postgres
+      - radius-postgres
+
+    networks:
+      - orange-network
+
+
+networks:
+  orange-network:
+    driver: bridge
+
+
+volumes:
+  orange_postgres_data:
+  radius_postgres_data:
+  redis_data:
+  pgadmin_data:

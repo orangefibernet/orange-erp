@@ -1,98 +1,89 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import {
+  Injectable,
+  Logger,
+} from '@nestjs/common';
+import {
+  Cron,
+  CronExpression,
+} from '@nestjs/schedule';
 
-import { PrismaService } from '../database/prisma.service';
+import { BillingService } from '../billing/billing.service';
+import { ProvisioningQueueService } from '../provisioning-queue/provisioning-queue.service';
 
 @Injectable()
 export class BillingSchedulerService {
-  private readonly logger = new Logger(BillingSchedulerService.name);
+  private readonly logger = new Logger(
+    BillingSchedulerService.name,
+  );
 
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly billingService: BillingService,
+    private readonly provisioningQueue: ProvisioningQueueService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async generateMonthlyBills() {
-    this.logger.log('Monthly Billing Started');
+    this.logger.log(
+      'Monthly Billing Started',
+    );
 
-    const today = new Date();
+    const count =
+      await this.billingService.generateMonthlyBills();
 
-    const month = today.getMonth() + 1;
-    const year = today.getFullYear();
+    this.logger.log(
+      `Generated ${count} billing record(s).`,
+    );
+  }
 
-    const subscriptions =
-      await this.prisma.subscription.findMany({
-        where: {
-          status: 'ACTIVE',
-        },
-        include: {
-          package: true,
-        },
-      });
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  async suspendOverdueCustomers() {
+    this.logger.log(
+      'Checking overdue customers...',
+    );
 
-    let generated = 0;
+    await this.billingService.markOverdueBills();
 
-    for (const subscription of subscriptions) {
-      const exists =
-        await this.prisma.billing.findFirst({
-          where: {
-            subscriptionId: subscription.id,
-            billingMonth: month,
-            billingYear: year,
-          },
-        });
+    const overdueBills =
+      await this.billingService.findOverdueBills();
 
-      if (exists) {
-        continue;
+    let queued = 0;
+
+    for (const bill of overdueBills) {
+      for (const connection of bill.subscription.connections) {
+        await this.provisioningQueue.suspend(
+          connection.id,
+        );
+        queued++;
       }
-
-      const amount = Number(
-        subscription.package.monthlyPrice,
-      );
-
-      const gstPercentage = Number(
-        subscription.package.gstPercentage,
-      );
-
-      const gstAmount =
-        (amount * gstPercentage) / 100;
-
-      const totalAmount = amount + gstAmount;
-
-      const dueDate = new Date(
-        year,
-        month - 1,
-        10,
-      );
-
-      await this.prisma.billing.create({
-        data: {
-          subscription: {
-            connect: {
-              id: subscription.id,
-            },
-          },
-
-          billingMonth: month,
-          billingYear: year,
-
-          invoiceNumber: `INV-${year}${String(month).padStart(2, '0')}-${generated + 1}`,
-
-          amount,
-
-          gstAmount,
-
-          totalAmount,
-
-          dueDate,
-        },
-      });
-
-      generated++;
     }
 
     this.logger.log(
-      `Generated ${generated} invoice(s).`,
+      `Queued ${queued} suspend job(s).`,
+    );
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
+  async resumePaidCustomers() {
+    this.logger.log(
+      'Checking paid customers...',
+    );
+
+    const paidBills =
+      await this.billingService.findPaidBills();
+
+    let queued = 0;
+
+    for (const bill of paidBills) {
+      for (const connection of bill.subscription.connections) {
+        await this.provisioningQueue.resume(
+          connection.id,
+        );
+        queued++;
+      }
+    }
+
+    this.logger.log(
+      `Queued ${queued} resume job(s).`,
     );
   }
 }

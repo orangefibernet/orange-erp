@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../database/prisma.service';
 import { CounterService } from '../counter/counter.service';
 import { CreateBillingDto } from './dto/create-billing.dto';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class BillingService {
@@ -15,6 +16,7 @@ export class BillingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly counterService: CounterService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async findAll() {
@@ -110,32 +112,39 @@ async generateOne(dto: CreateBillingDto) {
     subscription.billingDay,
   );
 
-  return this.prisma.billing.create({
-    data: {
-      subscriptionId: subscription.id,
+  const billing = await this.prisma.billing.create({
+  data: {
+    subscriptionId: subscription.id,
 
-      billingMonth: dto.billingMonth,
-      billingYear: dto.billingYear,
+    billingMonth: dto.billingMonth,
+    billingYear: dto.billingYear,
 
-      invoiceNumber,
+    invoiceNumber,
 
-      
+    amount,
 
-      amount,
+    gstPercentage,
 
-      gstPercentage,
+    gstAmount,
 
-      gstAmount,
+    totalAmount,
 
-      totalAmount,
+    dueDate,
 
-      dueDate,
+    status: 'GENERATED',
 
-      status: 'GENERATED',
+    remarks: dto.remarks,
+  },
+});
 
-      remarks: dto.remarks,
-    },
-  });
+await this.notificationService.create({
+  customerId: subscription.customerId,
+  title: 'Invoice Generated',
+  message: `Invoice ${billing.invoiceNumber} has been generated for ₹${billing.totalAmount}.`,
+  type: 'INFO',
+});
+
+return billing;
 }
 
   async generateMonthlyBills(): Promise<number> {
@@ -208,4 +217,64 @@ async generateOne(dto: CreateBillingDto) {
 
     return generated;
   }
+  async markOverdueBills() {
+  const today = new Date();
+
+  const result = await this.prisma.billing.updateMany({
+    where: {
+      status: 'GENERATED',
+      dueDate: {
+        lt: today,
+      },
+    },
+    data: {
+      status: 'OVERDUE',
+    },
+  });
+
+  this.logger.log(
+    `Marked ${result.count} bill(s) as overdue.`,
+  );
+
+  return result.count;
+}
+
+async findOverdueBills() {
+  return this.prisma.billing.findMany({
+    where: {
+      status: 'OVERDUE',
+    },
+    include: {
+      subscription: {
+        include: {
+          connections: {
+            where: {
+              deletedAt: null,
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+async findPaidBills() {
+  return this.prisma.billing.findMany({
+    where: {
+      status: 'PAID',
+    },
+    include: {
+      subscription: {
+        include: {
+          connections: {
+            where: {
+              deletedAt: null,
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
 }

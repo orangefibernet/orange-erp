@@ -3,19 +3,24 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { BillingStatus } from '@prisma/client';
 
 import { PrismaService } from '../database/prisma.service';
-import { BillingStatus } from '@prisma/client';
 import { CounterService } from '../counter/counter.service';
+import { NotificationService } from '../notification/notification.service';
+import { ProvisioningQueueService } from '../provisioning-queue/provisioning-queue.service';
+
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 
 @Injectable()
 export class PaymentService {
   constructor(
-  private readonly prisma: PrismaService,
-  private readonly counterService: CounterService,
-) {}
+    private readonly prisma: PrismaService,
+    private readonly counterService: CounterService,
+    private readonly notificationService: NotificationService,
+    private readonly provisioningQueueService: ProvisioningQueueService,
+  ) {}
 
   async create(dto: CreatePaymentDto) {
     const billing = await this.prisma.billing.findUnique({
@@ -24,11 +29,14 @@ export class PaymentService {
       },
       include: {
         payments: true,
+        subscription: true,
       },
     });
 
     if (!billing) {
-      throw new NotFoundException('Billing record not found');
+      throw new NotFoundException(
+        'Billing record not found',
+      );
     }
 
     const totalPaid = billing.payments.reduce(
@@ -43,8 +51,9 @@ export class PaymentService {
         'Payment exceeds outstanding balance',
       );
     }
+
     const receiptNumber =
-        await this.counterService.nextYearly('RCP');
+      await this.counterService.nextYearly('RCP');
 
     const payment = await this.prisma.payment.create({
       data: {
@@ -67,7 +76,8 @@ export class PaymentService {
 
     const newPaid = totalPaid + dto.amount;
 
-    let status: BillingStatus = BillingStatus.PENDING;
+    let status: BillingStatus =
+      BillingStatus.PENDING;
 
     if (newPaid >= billAmount) {
       status = BillingStatus.PAID;
@@ -85,6 +95,40 @@ export class PaymentService {
             : null,
       },
     });
+
+    await this.notificationService.create({
+      customerId: billing.subscription.customerId,
+      title: 'Payment Received',
+      message: `Payment of ₹${dto.amount} has been received successfully. Receipt No: ${receiptNumber}.`,
+      type: 'SUCCESS',
+    });
+
+    if (status === BillingStatus.PAID) {
+      const connection =
+        await this.prisma.connection.findFirst({
+          where: {
+            subscriptionId:
+              billing.subscriptionId,
+            status: 'SUSPENDED',
+            deletedAt: null,
+          },
+        });
+
+      if (connection) {
+        await this.provisioningQueueService.resume(
+          connection.id,
+        );
+
+        await this.notificationService.create({
+          customerId:
+            billing.subscription.customerId,
+          title: 'Service Restoration',
+          message:
+            'Your payment has been confirmed. Service restoration has been queued.',
+          type: 'SUCCESS',
+        });
+      }
+    }
 
     return payment;
   }
@@ -109,23 +153,33 @@ export class PaymentService {
   }
 
   async findOne(id: string) {
-    const payment = await this.prisma.payment.findUnique({
-      where: { id },
-      include: {
-        billing: true,
-      },
-    });
+    const payment =
+      await this.prisma.payment.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          billing: true,
+        },
+      });
 
     if (!payment) {
-      throw new NotFoundException('Payment not found');
+      throw new NotFoundException(
+        'Payment not found',
+      );
     }
 
     return payment;
   }
 
-  update(id: string, dto: UpdatePaymentDto) {
+  update(
+    id: string,
+    dto: UpdatePaymentDto,
+  ) {
     return this.prisma.payment.update({
-      where: { id },
+      where: {
+        id,
+      },
       data: {
         transactionId: dto.transactionId,
         collectedBy: dto.collectedBy,
@@ -138,7 +192,9 @@ export class PaymentService {
     await this.findOne(id);
 
     return this.prisma.payment.delete({
-      where: { id },
+      where: {
+        id,
+      },
     });
   }
 }

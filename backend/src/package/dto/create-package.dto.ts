@@ -1,5 +1,11 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { BillingCycle, PackageType } from '@prisma/client';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+} from '@nestjs/swagger';
+import {
+  BillingCycle,
+  PackageType,
+} from '@prisma/client';
 import {
   IsBoolean,
   IsEnum,
@@ -39,6 +45,16 @@ export class CreatePackageDto {
   @Min(1)
   uploadMbps: number;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  burstDownloadMbps?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  burstUploadMbps?: number;
+
   @ApiProperty()
   @IsNumber()
   monthlyPrice: number;
@@ -63,6 +79,65 @@ export class CreatePackageDto {
   @IsOptional()
   @IsInt()
   fupLimitGb?: number;
+
+  // ==========================
+  // Provisioning
+  // ==========================
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  radiusGroup?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  mikrotikProfile?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  ciscoPolicy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  huaweiProfile?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  zteProfile?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  nokiaProfile?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  ipPool?: string;
+
+  @ApiPropertyOptional({ default: 8 })
+  @IsOptional()
+  @IsInt()
+  priority?: number;
+
+  @ApiPropertyOptional({ default: 1 })
+  @IsOptional()
+  @IsInt()
+  simultaneousUse?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  sessionTimeout?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  idleTimeout?: number;
 
   @ApiPropertyOptional()
   @IsOptional()

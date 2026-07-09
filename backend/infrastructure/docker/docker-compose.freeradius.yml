@@ -1,0 +1,24 @@
+services:
+  freeradius:
+    image: freeradius/freeradius-server:latest
+    container_name: freeradius
+
+    restart: unless-stopped
+
+    depends_on:
+      radius-postgres:
+        condition: service_healthy
+
+    ports:
+      - "1812:1812/udp"
+      - "1813:1813/udp"
+
+    volumes:
+      - ../../freeradius:/etc/freeradius
+
+    networks:
+      - default
+
+networks:
+  default:
+    external: false
