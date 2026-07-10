@@ -6,7 +6,7 @@ import { NetworkModule } from '../network/network.module';
 import { NetworkSessionModule } from '../network-session/network-session.module';
 import { ProvisioningLogModule } from '../provisioning-log/provisioning-log.module';
 import { RadiusModule } from '../radius/radius.module';
-
+import { ProvisioningContextService } from '../provisioning/provisioning-engine/provisioning-context.service';
 import { ProvisioningEngineService } from '../provisioning/provisioning-engine/provisioning-engine.service';
 import { ProvisioningTransactionService } from '../provisioning/provisioning-transaction/provisioning-transaction.service';
 
@@ -20,12 +20,14 @@ import { ProvisioningTransactionService } from '../provisioning/provisioning-tra
     IpAllocationModule,
   ],
   providers: [
-    ProvisioningEngineService,
-    ProvisioningTransactionService,
+   ProvisioningContextService,
+  ProvisioningEngineService,
+  ProvisioningTransactionService,
   ],
   exports: [
-    ProvisioningEngineService,
-    ProvisioningTransactionService,
+    ProvisioningContextService,
+  ProvisioningEngineService,
+  ProvisioningTransactionService,
   ],
 })
 export class ProvisioningCoreModule {}

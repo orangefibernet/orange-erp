@@ -63,6 +63,7 @@ import { ProvisioningJobModule } from './provisioning-job/provisioning-job.modul
 import { BillingEngineModule } from './billing-engine/billing-engine.module';
 import { SelfcareModule } from './selfcare/selfcare.module';
 import { NotificationModule } from './notification/notification.module';
+import { NetworkManagementModule } from './network-management/network-management.module';
 
 @Module({
   imports: [
@@ -140,6 +141,7 @@ import { NotificationModule } from './notification/notification.module';
     BillingEngineModule,
     SelfcareModule,
     NotificationModule,
+    NetworkManagementModule,
   ],
 })
 export class AppModule {}

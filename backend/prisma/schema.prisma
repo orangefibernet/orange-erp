@@ -367,7 +367,7 @@ model Customer {
   connections      Connection[]
   provisioningLogs ProvisioningLog[]
   ipAddresses      IpAddress[]
-  notifications Notification[]
+  notifications    Notification[]
 
   customerType CustomerType   @default(HOME)
   status       CustomerStatus @default(LEAD)
@@ -475,8 +475,8 @@ model Package {
 
   isActive Boolean @default(true)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   @@index([companyId])
@@ -528,28 +528,28 @@ model Subscription {
 }
 
 model ProvisioningJob {
-  id           String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  queueJobId   String?  @unique
+  queueJobId String? @unique
 
   connectionId String
   connection   Connection @relation(fields: [connectionId], references: [id])
 
-  action       String
-  status       String
+  action String
+  status String
 
-  attempts     Int      @default(0)
+  attempts Int @default(0)
 
-  startedAt    DateTime?
-  completedAt  DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
 
-  error        String?
+  error String?
 
-  payload       Json?
-  response      Json?
+  payload  Json?
+  response Json?
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([connectionId])
   @@index([status])
@@ -569,8 +569,8 @@ model Connection {
   onuId String?
   onu   Onu?    @relation(fields: [onuId], references: [id])
 
-  nasId String?
-  nas   Nas?    @relation(fields: [nasId], references: [id])
+  nasId            String?
+  nas              Nas?              @relation(fields: [nasId], references: [id])
   provisioningJobs ProvisioningJob[]
 
   serviceType ServiceType @default(PPPOE)
@@ -690,28 +690,42 @@ model Olt {
   branchId String?
   branch   Branch? @relation(fields: [branchId], references: [id])
 
-  name   String
+  name String
+
   vendor OltVendor
 
   model String
 
   managementIp String
 
-  snmpCommunity String?
+  protocol DeviceProtocol @default(TELNET)
+
+  telnetPort Int @default(23)
 
   sshPort Int @default(22)
 
-  location String?
+  username String
 
-  onus     Onu[]
-  ponPorts PonPort[]
+  password String
+
+  snmpCommunity String?
+
+  timeout Int @default(10000)
+
+  location String?
 
   status OltStatus @default(ACTIVE)
 
   remarks String?
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  onus Onu[]
+
+  ponPorts PonPort[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
   deletedAt DateTime?
 
   @@unique([companyId, name])
@@ -1056,11 +1070,11 @@ model Notification {
   id String @id @default(uuid())
 
   customerId String?
-  customer Customer? @relation(fields: [customerId], references: [id])
+  customer   Customer? @relation(fields: [customerId], references: [id])
 
   employeeId String?
 
-  title String
+  title   String
   message String
 
   type NotificationType
@@ -1240,18 +1254,27 @@ enum ProvisioningStatus {
 
 enum ProvisioningAction {
   CREATE_CONNECTION
+
   CREATE_RADIUS_USER
   UPDATE_RADIUS_PASSWORD
   DELETE_RADIUS_USER
+
   ASSIGN_RADIUS_GROUP
   REMOVE_RADIUS_GROUP
+
   ALLOCATE_IP
   RELEASE_IP
+
   MIKROTIK_PROVISION
   MIKROTIK_DISABLE
   MIKROTIK_ENABLE
+
   OLT_PROVISION
   OLT_DEPROVISION
+
+  ACTIVATE
+  SUSPEND
+  TERMINATE
 }
 
 enum NotificationType {
@@ -1259,4 +1282,9 @@ enum NotificationType {
   SUCCESS
   WARNING
   ERROR
+}
+
+enum DeviceProtocol {
+  TELNET
+  SSH
 }

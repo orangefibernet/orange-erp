@@ -29,11 +29,11 @@ import { ProvisioningService } from './provisioning.service';
   controllers: [ProvisioningController],
   providers: [
     ProvisioningService,
-    ProvisioningEngineService,
+    
   ],
   exports: [
     ProvisioningService,
-    ProvisioningEngineService,
+    
   ],
 })
 export class ProvisioningModule {}

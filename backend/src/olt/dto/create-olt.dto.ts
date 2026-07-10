@@ -7,7 +7,10 @@ import {
   Min,
 } from 'class-validator';
 
-import { OltVendor } from '@prisma/client';
+import {
+  DeviceProtocol,
+  OltVendor,
+} from '@prisma/client';
 
 export class CreateOltDto {
   @IsString()
@@ -30,13 +33,32 @@ export class CreateOltDto {
   managementIp: string;
 
   @IsOptional()
-  @IsString()
-  snmpCommunity?: string;
+  @IsEnum(DeviceProtocol)
+  protocol?: DeviceProtocol;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  telnetPort?: number;
 
   @IsOptional()
   @IsInt()
   @Min(1)
   sshPort?: number;
+
+  @IsString()
+  username: string;
+
+  @IsString()
+  password: string;
+
+  @IsOptional()
+  @IsString()
+  snmpCommunity?: string;
+
+  @IsOptional()
+  @IsInt()
+  timeout?: number;
 
   @IsOptional()
   @IsString()
