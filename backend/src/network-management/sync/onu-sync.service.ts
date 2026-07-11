@@ -22,6 +22,29 @@ export class OnuSyncService {
     private readonly zteOnuService: ZteOnuService,
   ) {}
 
+  async getOnuStates(
+    oltId: string,
+  ) {
+    const olt =
+      await this.oltService.findOne(oltId);
+
+    if (!olt) {
+      throw new Error('OLT not found.');
+    }
+
+    const connection: DeviceConnection = {
+      host: olt.managementIp,
+      port: olt.telnetPort,
+      username: olt.username,
+      password: olt.password,
+      timeout: olt.timeout,
+    };
+
+    return this.zteOnuService.getOnuStates(
+      connection,
+    );
+  }
+
   async syncOnuState(
     oltId: string,
   ) {
@@ -69,7 +92,6 @@ export class OnuSyncService {
           );
 
           failed++;
-
           continue;
         }
 
@@ -93,7 +115,8 @@ export class OnuSyncService {
 
           onuId: state.onuId,
 
-          interfaceName: state.interfaceName,
+          interfaceName:
+            state.interfaceName,
 
           serialNumber:
             detail?.serialNumber,
