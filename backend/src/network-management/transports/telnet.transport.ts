@@ -2,76 +2,96 @@ import { Injectable } from '@nestjs/common';
 import { Telnet } from 'telnet-client';
 
 import { DeviceConnection } from '../interfaces/device-connection.interface';
+import { NetworkSession } from '../interfaces/network-session.interface';
 import { NetworkTransport } from '../interfaces/network-transport.interface';
 
-@Injectable()
-export class TelnetTransport implements NetworkTransport {
-  private readonly connection = new Telnet();
+class TelnetSession implements NetworkSession {
+  constructor(
+    private readonly connection: Telnet,
+  ) {}
 
-  private connected = false;
+  async execute(
+    command: string,
+  ): Promise<string> {
+    const output =
+      await this.connection.send(command, {
+        waitfor: /ZXAN[#>]\s*$/i,
+        timeout: 30000,
+        ors: '\r\n',
+      });
 
-  async connect(
-    config?: DeviceConnection,
-  ): Promise<void> {
-    if (!config) {
-      throw new Error('Connection configuration missing.');
+    return output ?? '';
+  }
+
+  async disconnect(): Promise<void> {
+    try {
+      await this.connection.end();
+    } catch {
+      // Ignore disconnect errors
     }
+  }
+}
 
-    await this.connection.connect({
+@Injectable()
+export class TelnetTransport
+  implements NetworkTransport
+{
+  async connect(
+    config: DeviceConnection,
+  ): Promise<NetworkSession> {
+    const connection = new Telnet();
+
+    await connection.connect({
       host: config.host,
       port: config.port,
 
       username: config.username,
       password: config.password,
 
-      loginPrompt: /(username|login|user)[: ]*$/i,
-      passwordPrompt: /password[: ]*$/i,
+      loginPrompt:
+        /(username|login|user)[: ]*$/im,
 
-      shellPrompt: /ZXAN[#>]\s*$/i,
+      passwordPrompt:
+        /password[: ]*$/im,
 
-      timeout: config.timeout ?? 10000,
+      shellPrompt:
+        /ZXAN[#>]\s*$/im,
+
+      timeout:
+        config.timeout ?? 10000,
+
       execTimeout: 30000,
 
       ors: '\r\n',
       irs: '\r\n',
 
       echoLines: 0,
+
       negotiationMandatory: false,
-      pageSeparator: /--More--|---- More ----/i,
+
+      pageSeparator:
+        /--More--|---- More ----|More/i,
 
       debug: false,
     });
 
-    this.connected = true;
-  }
-
-  async disconnect(): Promise<void> {
-    if (this.connected) {
-      try {
-        await this.connection.end();
-      } finally {
-        this.connected = false;
-      }
-    }
-  }
-
-  async execute(
-    command: string,
-  ): Promise<string> {
-    if (!this.connected) {
-      throw new Error('Telnet session not connected.');
-    }
-
-    const output = await this.connection.send(command, {
+    /*
+     * IMPORTANT
+     *
+     * After login the C300 prints
+     * banners/password warnings before
+     * reaching a stable prompt.
+     *
+     * Flush everything once so the first
+     * real command starts with a clean
+     * prompt.
+     */
+    await connection.send('', {
       waitfor: /ZXAN[#>]\s*$/i,
-      timeout: 30000,
+      timeout: 10000,
       ors: '\r\n',
     });
 
-    return output ?? '';
-  }
-
-  isConnected(): boolean {
-    return this.connected;
+    return new TelnetSession(connection);
   }
 }

@@ -1,18 +1,25 @@
-export const ZteCommands = {
+export class ZteCommands {
+  static readonly SHOW_CARD =
+    'show card';
 
-  SHOW_CARD:
-    'show card',
+  static readonly SHOW_ONU_STATE =
+    'show gpon onu state';
 
-  SHOW_VERSION:
-    'show version-running',
+  static readonly SHOW_ONU_DETAIL =
+    'show gpon onu detail';
 
-  SHOW_UNCONFIGURED_ONU:
-    'show gpon onu uncfg',
+  static readonly SHOW_OPTICAL_POWER =
+    'show pon power attenuation';
 
-  SHOW_ONU_STATE:
-    'show gpon onu state',
+  static buildOnuDetailCommand(
+    interfaceName: string,
+  ): string {
+    return `${this.SHOW_ONU_DETAIL} ${interfaceName}`;
+  }
 
-  SHOW_RUNNING:
-    'show running-config',
-
-};
+  static buildOpticalPowerCommand(
+    interfaceName: string,
+  ): string {
+    return `${this.SHOW_OPTICAL_POWER} ${interfaceName}`;
+  }
+}

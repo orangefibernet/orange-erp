@@ -1,4 +1,4 @@
-export interface ZteCard {
+export class CardDto {
   rack: number;
 
   shelf: number;
@@ -7,10 +7,8 @@ export interface ZteCard {
 
   configuredType: string;
 
-  // Matches Prisma schema
   realType: string;
 
-  // Matches Prisma schema
   portCount: number;
 
   hardwareVersion?: string;

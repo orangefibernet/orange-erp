@@ -20,12 +20,24 @@ export class CreatePonPortDto {
   @IsUUID()
   oltId: string;
 
-  @IsString()
-  name: string;
+  @IsInt()
+  @Min(1)
+  rack: number;
+
+  @IsInt()
+  @Min(1)
+  shelf: number;
+
+  @IsInt()
+  @Min(1)
+  slot: number;
 
   @IsInt()
   @Min(1)
   portNumber: number;
+
+  @IsString()
+  name: string;
 
   @IsOptional()
   @IsString()

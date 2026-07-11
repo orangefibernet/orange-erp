@@ -1,11 +1,8 @@
+import { DeviceConnection } from './device-connection.interface';
+import { NetworkSession } from './network-session.interface';
+
 export interface NetworkTransport {
-  connect(): Promise<void>;
-
-  disconnect(): Promise<void>;
-
-  execute(
-    command: string,
-  ): Promise<string>;
-
-  isConnected(): boolean;
+  connect(
+    connection: DeviceConnection,
+  ): Promise<NetworkSession>;
 }

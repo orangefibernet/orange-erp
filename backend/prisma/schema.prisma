@@ -722,6 +722,8 @@ model Olt {
 
   ponPorts PonPort[]
 
+  cards OltCard[]
+
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
@@ -732,6 +734,42 @@ model Olt {
   @@unique([companyId, managementIp])
   @@index([companyId])
   @@index([branchId])
+}
+
+model OltCard {
+  id String @id @default(cuid())
+
+  oltId String
+
+  olt Olt @relation(fields: [oltId], references: [id], onDelete: Cascade)
+
+  rack Int
+
+  shelf Int
+
+  slot Int
+
+  configuredType String
+
+  realType String
+
+  portCount Int
+
+  hardwareVersion String?
+
+  softwareVersion String?
+
+  status String
+
+  lastSyncAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([oltId, rack, shelf, slot])
+  @@index([oltId])
+  @@index([status])
 }
 
 model Onu {
@@ -746,36 +784,84 @@ model Onu {
   oltId String
   olt   Olt    @relation(fields: [oltId], references: [id])
 
-  serialNumber String    @unique
-  vendor       OnuVendor
-  model        String
-
   ponPortId String
   ponPort   PonPort @relation(fields: [ponPortId], references: [id])
-  onuId     Int
+
+  onuId Int
+
+  // ==========================
+  // Discovery Information
+  // ==========================
+
+  interfaceName String?
+
+  serialNumber String @unique
+
+  vendor OnuVendor
+
+  model String
+
+  onuName String?
+
+  description String?
+
+  adminState String?
+
+  omccState String?
+
+  phaseState String?
+
+  configState String?
+
+  authenticationMode String?
+
+  channel String?
+
+  onlineDuration String?
+
+  // ==========================
+  // Hardware
+  // ==========================
 
   macAddress String?
 
-  status OnuStatus @default(OFFLINE)
-
   rxPower Float?
+
   txPower Float?
 
   distance Float?
 
+  // ==========================
+  // Status
+  // ==========================
+
+  status OnuStatus @default(OFFLINE)
+
   installedAt DateTime?
 
-  remarks     String?
+  lastSyncAt DateTime?
+
+  remarks String?
+
+  // ==========================
+  // Relations
+  // ==========================
+
   connections Connection[]
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
   deletedAt DateTime?
 
   @@unique([ponPortId, onuId])
   @@index([companyId])
   @@index([branchId])
   @@index([oltId])
+  @@index([status])
+  @@index([phaseState])
+  @@index([serialNumber])
 }
 
 model PonPort {
@@ -790,14 +876,28 @@ model PonPort {
   oltId String
   olt   Olt    @relation(fields: [oltId], references: [id])
 
-  name       String // GPON1/1
-  portNumber Int // 1
-  splitter   String? // 1:64
-  capacity   Int     @default(64)
+  // Physical Location
+  rack       Int
+  shelf      Int
+  slot       Int
+  portNumber Int
+
+  // Display Name
+  name String
+
+  splitter String?
+
+  capacity Int @default(64)
+
+  configuredOnuCount Int @default(0)
+
+  onlineOnuCount Int @default(0)
 
   status PonPortStatus @default(ACTIVE)
 
   remarks String?
+
+  lastSyncAt DateTime?
 
   onus Onu[]
 
@@ -805,7 +905,7 @@ model PonPort {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  @@unique([oltId, portNumber])
+  @@unique([oltId, rack, shelf, slot, portNumber])
   @@unique([oltId, name])
   @@index([companyId])
   @@index([branchId])

@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Param,
+  Post,
 } from '@nestjs/common';
 
 import { NetworkManagementService } from './network-management.service';
@@ -18,10 +19,32 @@ export class NetworkManagementController {
   ) {
     return this.service.getCards(id);
   }
+
   @Get('olt/:id/test')
-testConnection(
-  @Param('id') id: string,
-) {
-  return this.service.testConnection(id);
-}
+  testConnection(
+    @Param('id') id: string,
+  ) {
+    return this.service.testConnection(id);
+  }
+
+  @Post('olt/:id/sync/cards')
+  syncCards(
+    @Param('id') id: string,
+  ) {
+    return this.service.syncCards(id);
+  }
+
+  @Post('olt/:id/sync/pon-ports')
+  syncPonPorts(
+    @Param('id') id: string,
+  ) {
+    return this.service.syncPonPorts(id);
+  }
+
+  @Post('olt/:id/sync/onus')
+  syncOnus(
+    @Param('id') id: string,
+  ) {
+    return this.service.syncOnus(id);
+  }
 }
