@@ -58,7 +58,6 @@ const [serviceType, setServiceType] =
 
  const {
   activate,
-  isPending,
 } = useServiceActivation();
 
  //   const connectionMutation =
@@ -265,19 +264,18 @@ const [serviceType, setServiceType] =
               }
             />
 
-            {mutation.isError && (
-              <Alert
-                severity="error"
-                sx={{
-                  mt: 2,
-                }}
-              >
-                Failed to create
-                subscription.
-              </Alert>
-            )}
-          </>
-        )}
+           <Alert
+  severity="info"
+  sx={{
+    mt: 2,
+  }}
+>
+  Subscription and connection will be created
+  after clicking Activate Service.
+</Alert>
+   </>
+
+)}     
 
         {activeStep === 3 && (
   <ConnectionStep
@@ -336,10 +334,7 @@ const [serviceType, setServiceType] =
             <Button
               variant="contained"
               onClick={finish}
-              disabled={
-                mutation.isPending ||
-                !selectedPackage
-              }
+              disabled={!selectedPackage}
             >
               Activate Service
             </Button>
